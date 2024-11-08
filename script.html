@@ -219,22 +219,11 @@
 
         function copyTableWithLevel() {
             const table = document.getElementById("dataTable");
-            const tableRows = table.getElementsByTagName("tr");
-            let tableContent = "";
+            const tableContent = table.outerHTML; // Get the entire table HTML
 
-            // Loop through each row and include the first column (level column)
-            for (let i = 0; i < tableRows.length; i++) {
-                const cells = tableRows[i].getElementsByTagName("td");
-                const rowContent = [];
-                for (let j = 0; j < cells.length; j++) { // Include level column
-                    rowContent.push(cells[j].innerText);
-                }
-                tableContent += rowContent.join("\t") + "\n";
-            }
-
-            // Copy the content to clipboard
+            // Create a temporary element to copy the table HTML
             const textarea = document.createElement("textarea");
-            textarea.value = tableContent.trim();
+            textarea.value = tableContent;
             document.body.appendChild(textarea);
             textarea.select();
             document.execCommand('copy');
@@ -245,22 +234,26 @@
 
         function copyTableWithoutLevel() {
             const table = document.getElementById("dataTable");
-            const tableRows = table.getElementsByTagName("tr");
-            let tableContent = "";
+            const rows = table.getElementsByTagName("tr");
+            let tableContent = "<table>";
 
             // Loop through each row and exclude the first column (level column)
-            for (let i = 0; i < tableRows.length; i++) {
-                const cells = tableRows[i].getElementsByTagName("td");
-                const rowContent = [];
+            for (let i = 0; i < rows.length; i++) {
+                const cells = rows[i].getElementsByTagName("td");
+                tableContent += "<tr>";
+
                 for (let j = 1; j < cells.length; j++) { // Start from index 1 to skip level column
-                    rowContent.push(cells[j].innerText);
+                    tableContent += `<td>${cells[j].innerText}</td>`;
                 }
-                tableContent += rowContent.join("\t") + "\n";
+
+                tableContent += "</tr>";
             }
 
-            // Copy the content to clipboard
+            tableContent += "</table>";
+
+            // Create a temporary element to copy the modified table HTML
             const textarea = document.createElement("textarea");
-            textarea.value = tableContent.trim();
+            textarea.value = tableContent;
             document.body.appendChild(textarea);
             textarea.select();
             document.execCommand('copy');
