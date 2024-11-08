@@ -196,7 +196,7 @@
                 message.remove();
             }
         }
-        function copyTable(includeLevel) {
+function copyTable(includeLevel) {
     const inputData = document.getElementById('inputData').value.trim();
     const rows = inputData.split('\n');
     const levelData = {};
@@ -236,7 +236,15 @@
 
     const unitArray = Array.from(unitNumbers).sort((a, b) => parseInt(a) - parseInt(b));
 
-    let tableText = "Level\t" + unitArray.join("\t") + "\n"; // Start with the header row
+    let tableHtml = "<table style='border-collapse: collapse;'>";
+
+    // Header Row
+    tableHtml += "<tr>";
+    tableHtml += "<th>Level</th>";
+    unitArray.forEach(unit => {
+        tableHtml += `<th style='border: 1px solid black;'>${unit}</th>`;
+    });
+    tableHtml += "</tr>";
 
     // Levels Row
     const levels = Object.keys(levelData);
@@ -247,40 +255,57 @@
     }
 
     sortedLevels.forEach(level => {
-        let rowText = level;
+        tableHtml += "<tr>";
+        tableHtml += `<td style='border: 1px solid black;'>${level}</td>`;
         unitArray.forEach(unit => {
             const value = levelData[level][unit];
-            let cellColor = '';
+            let cellColor = '#FFFFFF'; // Default to white
 
             if (value === 'A') {
-                cellColor = 'Green';
+                cellColor = '#00FF00'; // Green
             } else if (value === 'C') {
-                cellColor = 'Red';
+                cellColor = '#FF0000'; // Red
             } else if (value === undefined) {
-                cellColor = 'Black';
-            } else {
-                cellColor = 'White';
+                cellColor = '#000000'; // Black
             }
 
-            rowText += "\t" + cellColor; // Append color info instead of using actual color codes
+            tableHtml += `<td style="background-color:${cellColor};border: 1px solid black;"></td>`; // Empty cell with color
         });
-        tableText += rowText + "\n"; // Add the row to the final text
+        tableHtml += "</tr>";
     });
 
-    // Create a hidden textarea to copy the table data
-    const textarea = document.createElement("textarea");
-    textarea.value = tableText;
-    document.body.appendChild(textarea);
+    tableHtml += "</table>";
 
-    // Select the text in the textarea
-    textarea.select();
-    textarea.setSelectionRange(0, textarea.value.length);
+    // Debugging step: Log table HTML
+    console.log("Generated Table HTML:\n", tableHtml);
 
-    // Execute the copy command
-    const successful = document.execCommand("copy");
+    // Create a temporary hidden iframe to simulate the copy process
+    const iframe = document.createElement("iframe");
+    iframe.style.position = "absolute";
+    iframe.style.top = "-9999px";
+    iframe.style.left = "-9999px";
+    document.body.appendChild(iframe);
 
-    // Remove the textarea after copying
-    document.body.removeChild(textarea);
+    // Write the table HTML into the iframe's document
+    const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+    iframeDoc.open();
+    iframeDoc.write("<html><head><style>table, td, th {border: 1px solid black; padding: 5px;}</style></head><body>");
+    iframeDoc.write(tableHtml);
+    iframeDoc.write("</body></html>");
+    iframeDoc.close();
+
+    // Ensure the content is loaded and select it
+    const range = iframeDoc.createRange();
+    range.selectNodeContents(iframeDoc.body);
+    const selection = iframeDoc.getSelection();
+    selection.removeAllRanges();
+    selection.addRange(range);
+
+    // Copy the content to clipboard
+    iframeDoc.execCommand("copy");
+
+    // Clean up the iframe after the operation
+    document.body.removeChild(iframe);
 
     // Create and show a temporary message
     const message = document.createElement("div");
@@ -303,12 +328,7 @@
     setTimeout(() => {
         message.remove();
     }, 2000);
-
-    // Log the copy result for debugging
-    console.log(successful ? "Copy successful" : "Copy failed");
 }
-
-
 
 
         // Function to convert RGB to Hex color code
