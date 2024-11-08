@@ -78,6 +78,7 @@
 
     <h3>Filtered Data:</h3>
     <div>You can choose to copy or download the table.</div>
+    <p>Version 2</p>
     <table id="dataTable">
         <thead></thead>
         <tbody></tbody>
@@ -85,8 +86,7 @@
 
     <div class="button-group">
         <button onclick="generateExcel()">Download as Excel</button>
-        <button onclick="copyTable(false)">Copy without level</button>
-        <button onclick="copyTable(true)">Copy with level</button>
+        <button onclick="copyTable()">Copy to Clipboard with Colors</button>
     </div>
 
     <script>
@@ -230,34 +230,18 @@
             return 'FFFFFF'; // default to white if parsing fails
         }
 
-        function copyTable(includeLevel) {
+        function copyTable() {
             const table = document.getElementById("dataTable");
-            let tableContent = [];
 
-            const rows = table.getElementsByTagName("tr");
-            Array.from(rows).forEach((row, rowIndex) => {
-                const cells = row.getElementsByTagName("td");
-                let rowContent = [];
-                Array.from(cells).forEach((cell, cellIndex) => {
-                    if (cell.style.backgroundColor) {
-                        const cellColor = rgbToHex(cell.style.backgroundColor);
-                        rowContent.push(cellColor);
-                    } else {
-                        rowContent.push('');
-                    }
-                });
-                tableContent.push(rowContent);
+            // Create a clipboard-friendly HTML format of the table
+            const html = table.outerHTML;
+
+            // Copy to clipboard using the Clipboard API
+            navigator.clipboard.writeText(html).then(() => {
+                alert("Table copied to clipboard with colors! You can paste it directly into Excel.");
+            }, () => {
+                alert("Failed to copy table.");
             });
-
-            // Copy to clipboard as CSV formatted text (background color information only)
-            const textarea = document.createElement("textarea");
-            textarea.value = tableContent.map(row => row.join("\t")).join("\n");
-            document.body.appendChild(textarea);
-            textarea.select();
-            document.execCommand('copy');
-            document.body.removeChild(textarea);
-
-            alert("Table colors copied" + (includeLevel ? " with the Level column." : " without the Level column."));
         }
     </script>
 </body>
