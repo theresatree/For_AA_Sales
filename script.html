@@ -85,7 +85,6 @@
     </table>
 
     <div class="button-group">
-        <button onclick="generateExcel()">Download as Excel</button>
         <button onclick="copyTable(false)">Copy without level</button>
         <button onclick="copyTable(true)">Copy with level</button>
     </div>
@@ -265,44 +264,6 @@
         setTimeout(() => {
             message.remove();
         }, 2000);
-    }
-    
-    // Function to generate the Excel file with color fill
-    function generateExcel() {
-        const table = document.getElementById("dataTable");
-        const ws = XLSX.utils.table_to_sheet(table, { sheet: "Sheet1" });
-    
-        // Apply column width and colors to the Excel file
-        const colWidth = [];
-        for (let i = 0; i < table.rows[0].cells.length; i++) {
-            colWidth.push({ wpx: 80 });
-        }
-        ws['!cols'] = colWidth;
-    
-        // Handle cell background colors in the Excel file
-        const rows = table.rows;
-        for (let i = 1; i < rows.length; i++) {  // start from 1 to skip the header row
-            for (let j = 0; j < rows[i].cells.length; j++) {
-                const cell = rows[i].cells[j];
-                const cellColor = rgbToHex(cell.style.backgroundColor);
-                const cellAddress = XLSX.utils.encode_cell({ r: i - 1, c: j }); // Adjust row index for sheet
-    
-                if (cellColor) {
-                    if (!ws[cellAddress]) {
-                        ws[cellAddress] = {};
-                    }
-                    ws[cellAddress].s = {
-                        fill: {
-                            fgColor: { rgb: cellColor }
-                        }
-                    };
-                }
-            }
-        }
-    
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
-        XLSX.writeFile(wb, "filtered_data.xlsx");
     }
     
     // Function to convert RGB to Hex color code
