@@ -6,25 +6,23 @@
     <title>Data Filter and Excel Generator</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
     <style>
-        /* Center the main content */
         body {
             display: flex;
             flex-direction: column;
             align-items: center;
         }
 
-        textarea { 
-            width: 30%; /* Reduced from 100% to 50% */
+        textarea {
+            width: 30%;
             height: 200px;
             margin: 0 auto;
             display: block;
         }
 
-        /* Style for both buttons */
         button {
             margin: 10px;
-            padding: 12px 24px; /* Increased padding for bigger buttons */
-            font-size: 16px; /* Larger font size */
+            padding: 12px 24px;
+            font-size: 16px;
             cursor: pointer;
             background-color: #4CAF50;
             color: white;
@@ -39,7 +37,7 @@
         table { 
             width: 50%; 
             border-collapse: collapse; 
-            margin: 20px auto; /* Added auto margins for centering */
+            margin: 20px auto;
             user-select: all;
         }
 
@@ -50,7 +48,6 @@
             vertical-align: middle;
         }
 
-        /* Center all other elements */
         h1, h3, p, div {
             text-align: center;
             width: 100%;
@@ -63,7 +60,6 @@
             width: 100%;
         }
 
-        /* New style for buttons next to each other */
         .button-group {
             display: flex;
             justify-content: center;
@@ -82,11 +78,10 @@
 
     <h3>Filtered Data:</h3>
     <div>You can choose to copy or download the table.</div>
+    <p>Version 2</p>
     <table id="dataTable">
-        <thead>
-        </thead>
-        <tbody>
-        </tbody>
+        <thead></thead>
+        <tbody></tbody>
     </table>
 
     <div class="button-group">
@@ -102,10 +97,8 @@
             const levelData = {};
             const unitNumbers = new Set();
 
-            // Process each row
             rows.forEach(row => {
                 const columns = row.trim().split(/[\t\s]+/);
-
                 if (columns.length >= 3) {
                     let code = columns[0].trim();
                     const unit = columns[columns.length - 1].trim();
@@ -119,7 +112,6 @@
                             levelData[level] = {};
                         }
 
-                        // Handle empty or space code
                         if (code === '') {
                             levelData[level][unitNumber] = ' ';
                         } else {
@@ -136,37 +128,28 @@
                 }
             });
 
-            // Convert unitNumbers to a sorted array
             const unitArray = Array.from(unitNumbers).sort((a, b) => parseInt(a) - parseInt(b));
 
-            // Create table headers
             const tableHeader = document.getElementById('dataTable').getElementsByTagName('thead')[0];
             tableHeader.innerHTML = '';
             const headerRow = document.createElement('tr');
             const firstTh = document.createElement('th');
             firstTh.textContent = 'Level';
-            firstTh.style.textAlign = 'center';
             headerRow.appendChild(firstTh);
 
             unitArray.forEach(unit => {
                 const th = document.createElement('th');
                 th.textContent = unit;
-                th.style.textAlign = 'center';
                 headerRow.appendChild(th);
             });
             tableHeader.appendChild(headerRow);
 
-            // Populate the table with the filtered data
             const tableBody = document.getElementById('dataTable').getElementsByTagName('tbody')[0];
             tableBody.innerHTML = '';
 
-            // Sort levels with special handling for Level 1
             const levels = Object.keys(levelData);
-            const sortedLevels = levels
-                .filter(level => level !== '01')
-                .sort((a, b) => parseInt(a) - parseInt(b));
+            const sortedLevels = levels.filter(level => level !== '01').sort((a, b) => parseInt(a) - parseInt(b));
 
-            // Add level 1 at the end if it exists
             if (levels.includes('01')) {
                 sortedLevels.push('01');
             }
@@ -175,25 +158,23 @@
                 const tr = document.createElement('tr');
                 const tdLevel = document.createElement('td');
                 tdLevel.textContent = level;
-                tdLevel.style.textAlign = 'center';
                 tr.appendChild(tdLevel);
 
                 unitArray.forEach(unit => {
                     const td = document.createElement('td');
                     const value = levelData[level][unit];
-                    td.style.textAlign = 'center';
 
-                    // Apply background colors directly as styles
                     if (value === 'A') {
-                        td.style.backgroundColor = '#00FF00'; // Green
+                        td.style.backgroundColor = '#00FF00';
                     } else if (value === 'C') {
-                        td.style.backgroundColor = '#FF0000'; // Red
+                        td.style.backgroundColor = '#FF0000';
                     } else if (value === undefined) {
-                        td.style.backgroundColor = '#000000'; // Black
+                        td.style.backgroundColor = '#000000';
                     } else {
-                        td.style.backgroundColor = '#FFFFFF'; // White for space
+                        td.style.backgroundColor = '#FFFFFF';
                     }
 
+                    td.textContent = value || '';
                     tr.appendChild(td);
                 });
 
@@ -219,27 +200,20 @@
 
         function copyTable(includeLevel) {
             const table = document.getElementById("dataTable");
-            let tableContent = table.outerHTML;
+            let tableContent = "";
 
-            if (!includeLevel) {
-                // If we don't want the "Level" column, we will modify the table content
-                const rows = table.getElementsByTagName("tr");
-                let modifiedContent = "<table>";
-
-                Array.from(rows).forEach((row) => {
-                    const cells = row.getElementsByTagName("td");
-                    let rowContent = "<tr>";
-                    for (let i = 1; i < cells.length; i++) { // Skip the first column (Level)
-                        rowContent += `<td>${cells[i].innerText}</td>`;
+            const rows = table.getElementsByTagName("tr");
+            Array.from(rows).forEach((row, rowIndex) => {
+                const cells = row.getElementsByTagName("td");
+                let rowContent = [];
+                Array.from(cells).forEach((cell, cellIndex) => {
+                    if (includeLevel || cellIndex !== 0) {
+                        rowContent.push(cell.textContent.trim());
                     }
-                    rowContent += "</tr>";
-                    modifiedContent += rowContent;
                 });
-                modifiedContent += "</table>";
-                tableContent = modifiedContent;
-            }
+                tableContent += rowContent.join(",") + "\n";
+            });
 
-            // Copy the table content to the clipboard
             const textarea = document.createElement("textarea");
             textarea.value = tableContent;
             document.body.appendChild(textarea);
