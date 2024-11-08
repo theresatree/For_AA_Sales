@@ -107,12 +107,8 @@
                     } else if (value === '') {
                         cellColor = 'empty';
                     } else {
-                        cellColor = 'black';
-                    }
-
-                    // If the unit does not exist for the level, color it black
-                    if (!levelData[level][unit]) {
-                        cellColor = 'black';
+                        // If the unit does not exist for the level, color it black
+                        cellColor = levelData[level][unit] === undefined ? 'black' : 'empty';
                     }
 
                     td.classList.add(cellColor);
@@ -129,7 +125,7 @@
             // Manually adjust the width of the columns before export
             const ws = XLSX.utils.table_to_sheet(table, { sheet: "Sheet1" });
 
-            // Set the column widths to make the table more compact (e.g., 50px width)
+            // Set the column widths to make the table more compact (e.g., 80px)
             const colWidth = [];
             for (let i = 0; i < table.rows[0].cells.length; i++) {
                 colWidth.push({ wpx: 80 });  // Adjust column width (e.g., 80px)
