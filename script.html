@@ -53,13 +53,13 @@
                         const level = unitParts[0];  // Extract the row (level)
                         const unitNumber = unitParts[1];  // Extract the unit number
 
-                        // Only include rows where the code is "A" or "C"
-                        if (code === 'A' || code === 'C') {
+                        // Only include rows where the code is "A" or "C", or " " (space)
+                        if (code === 'A' || code === 'C' || code === ' ') {
                             if (!levelData[level]) {
                                 levelData[level] = {};
                             }
                             // Mark the unit number for the specific level
-                            levelData[level][unitNumber] = code;
+                            levelData[level][unitNumber] = (code === ' ') ? '' : code;
                             unitNumbers.add(unitNumber); // Add unit number to the set
                         }
                     }
