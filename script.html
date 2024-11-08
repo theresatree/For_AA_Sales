@@ -241,26 +241,24 @@
 
         function copyTable(includeLevel) {
             const table = document.getElementById("dataTable");
-            let tableContent = table.outerHTML;
-
-            if (!includeLevel) {
-                // If we don't want the "Level" column, we will modify the table content
-                const rows = table.getElementsByTagName("tr");
-                let modifiedContent = "<table>";
-
-                Array.from(rows).forEach((row) => {
-                    const cells = row.getElementsByTagName("td");
-                    let rowContent = "<tr>";
-                    for (let i = 1; i < cells.length; i++) { // Skip the first column (Level)
-                        rowContent += `<td>${cells[i].innerText}</td>`;
-                    }
-                    rowContent += "</tr>";
-                    modifiedContent += rowContent;
-                });
-                modifiedContent += "</table>";
-                tableContent = modifiedContent;
-            }
-
+            let tableContent = "";
+        
+            // Loop through the rows of the table
+            const rows = table.getElementsByTagName("tr");
+        
+            Array.from(rows).forEach((row) => {
+                const cells = row.getElementsByTagName("td");
+                let rowContent = "";
+        
+                // If we want to include the Level column, or skip it based on the includeLevel flag
+                for (let i = (includeLevel ? 0 : 1); i < cells.length; i++) { // Start at 0 if includeLevel, else skip the first column (Level)
+                    rowContent += cells[i].innerText + "\t";  // Add tab between cell values
+                }
+        
+                // Remove the trailing tab character and add a newline for the row
+                tableContent += rowContent.trim() + "\n";
+            });
+        
             // Copy the table content to the clipboard
             const textarea = document.createElement("textarea");
             textarea.value = tableContent;
@@ -268,7 +266,7 @@
             textarea.select();
             document.execCommand('copy');
             document.body.removeChild(textarea);
-
+        
             alert("Table content copied" + (includeLevel ? " with the Level column." : " without the Level column."));
         }
     </script>
