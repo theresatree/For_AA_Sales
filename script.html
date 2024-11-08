@@ -236,13 +236,13 @@ function copyTable(includeLevel) {
 
     const unitArray = Array.from(unitNumbers).sort((a, b) => parseInt(a) - parseInt(b));
 
-    let tableHtml = "<table style='border-collapse: collapse;'>";
+    let tableHtml = "<table>";
 
     // Header Row
     tableHtml += "<tr>";
     tableHtml += "<th>Level</th>";
     unitArray.forEach(unit => {
-        tableHtml += `<th style='border: 1px solid black;'>${unit}</th>`;
+        tableHtml += `<th>${unit}</th>`;
     });
     tableHtml += "</tr>";
 
@@ -256,7 +256,7 @@ function copyTable(includeLevel) {
 
     sortedLevels.forEach(level => {
         tableHtml += "<tr>";
-        tableHtml += `<td style='border: 1px solid black;'>${level}</td>`;
+        tableHtml += `<td>${level}</td>`;
         unitArray.forEach(unit => {
             const value = levelData[level][unit];
             let cellColor = '#FFFFFF'; // Default to white
@@ -300,6 +300,9 @@ function copyTable(includeLevel) {
     const selection = iframeDoc.getSelection();
     selection.removeAllRanges();
     selection.addRange(range);
+
+    // Debugging step: log the selection range to confirm selection includes all cells
+    console.log("Selection Range: ", selection);
 
     // Copy the content to clipboard
     iframeDoc.execCommand("copy");
