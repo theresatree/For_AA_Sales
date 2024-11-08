@@ -252,12 +252,14 @@ function copyTable(includeLevel) {
     iframeDoc.write("</body></html>");
     iframeDoc.close();
 
-    // Select the table in the iframe and copy it to clipboard
+    // Ensure the content is loaded and select it
     const range = iframeDoc.createRange();
     range.selectNodeContents(iframeDoc.body);
     const selection = iframeDoc.getSelection();
     selection.removeAllRanges();
     selection.addRange(range);
+
+    // Copy the content to clipboard
     iframeDoc.execCommand("copy");
 
     // Clean up the iframe after the operation
@@ -284,18 +286,6 @@ function copyTable(includeLevel) {
     setTimeout(() => {
         message.remove();
     }, 2000);
-}
-
-// Function to convert RGB to Hex color code
-function rgbToHex(rgb) {
-    const result = rgb.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
-    if (result) {
-        const r = parseInt(result[1]).toString(16).padStart(2, '0');
-        const g = parseInt(result[2]).toString(16).padStart(2, '0');
-        const b = parseInt(result[3]).toString(16).padStart(2, '0');
-        return r + g + b;
-    }
-    return 'FFFFFF'; // default to white if parsing fails
 }
 
 
