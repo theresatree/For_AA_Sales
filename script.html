@@ -71,6 +71,7 @@
 <body>
     <h1>Filter Data and Generate Excel</h1>
     <p>Paste your data below (e.g., "A TOH GUAN ROAD #02-50"):</p>
+    <p>version 222222</p>
     <textarea id="inputData" placeholder="Paste data here..."></textarea>
     <div class="controls">
         <button onclick="processData()">Process Data</button>
@@ -179,105 +180,106 @@
                 tableBody.appendChild(tr);
             });
         }
-    // Function to copy the table, optionally including the level
-    function copyTable(includeLevel) {
-        const table = document.getElementById("dataTable");
-        let tableHtml = "<table>";
-    
-        // Get the header row (unit numbers)
-        const headerRow = table.getElementsByTagName("thead")[0].getElementsByTagName("tr")[0];
-        tableHtml += "<tr>";
-        Array.from(headerRow.children).forEach((cell, index) => {
-            // Only include unit numbers (skip level column if not including level)
-            if (includeLevel || index > 0) {
-                tableHtml += `<th>${cell.textContent}</th>`;
-            }
-        });
-        tableHtml += "</tr>";
-    
-        // Generate the table rows including the colors
-        const rows = table.getElementsByTagName("tr");
-        Array.from(rows).forEach((row, rowIndex) => {
-            // Skip the first row (header row) as we've already added it
-            if (rowIndex === 0) return;
-    
-            tableHtml += "<tr>";
-            const cells = row.getElementsByTagName("td");
-    
-            // Loop through all the cells in the row and capture their content
-            Array.from(cells).forEach((cell, cellIndex) => {
-                // Skip the first cell (level column) if not including level
-                if (includeLevel || cellIndex > 0) {
-                    const cellColor = rgbToHex(cell.style.backgroundColor);
-                    let style = cellColor ? `background-color:#${cellColor};` : '';
-                    tableHtml += `<td style="${style}">${cell.innerHTML}</td>`;
-                }
-            });
-            tableHtml += "</tr>";
-        });
-    
-        tableHtml += "</table>";
-    
-        // Create a temporary hidden iframe to simulate the copy process
-        const iframe = document.createElement("iframe");
-        iframe.style.position = "absolute";
-        iframe.style.top = "-9999px";
-        iframe.style.left = "-9999px";
-        document.body.appendChild(iframe);
-    
-        // Write the table HTML into the iframe's document
-        const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-        iframeDoc.open();
-        iframeDoc.write("<html><head><style>table, td, th {border: 1px solid black; padding: 5px;}</style></head><body>");
-        iframeDoc.write(tableHtml);
-        iframeDoc.write("</body></html>");
-        iframeDoc.close();
-    
-        // Select the table in the iframe and copy it to clipboard
-        const range = iframeDoc.createRange();
-        range.selectNodeContents(iframeDoc.body);
-        const selection = iframeDoc.getSelection();
-        selection.removeAllRanges();
-        selection.addRange(range);
-        iframeDoc.execCommand("copy");
-    
-        // Clean up the iframe after the operation
-        document.body.removeChild(iframe);
-    
-        // Create and show a temporary message
-        const message = document.createElement("div");
-        message.textContent = includeLevel
-            ? "Colors with level successfully copied"
-            : "Colors successfully copied";
-        message.style.position = "fixed";
-        message.style.top = "20px";
-        message.style.left = "50%";
-        message.style.transform = "translateX(-50%)";
-        message.style.padding = "10px 20px";
-        message.style.backgroundColor = "#4CAF50";
-        message.style.color = "#fff";
-        message.style.fontSize = "16px";
-        message.style.borderRadius = "5px";
-        message.style.zIndex = "9999";
-        document.body.appendChild(message);
-    
-        // Remove the message after 2 seconds
-        setTimeout(() => {
-            message.remove();
-        }, 2000);
-    }
-    
-    // Function to convert RGB to Hex color code
-    function rgbToHex(rgb) {
-        const result = rgb.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
-        if (result) {
-            const r = parseInt(result[1]).toString(16).padStart(2, '0');
-            const g = parseInt(result[2]).toString(16).padStart(2, '0');
-            const b = parseInt(result[3]).toString(16).padStart(2, '0');
-            return r + g + b;
+// Function to copy the table, optionally including the level
+function copyTable(includeLevel) {
+    const table = document.getElementById("dataTable");
+    let tableHtml = "<table>";
+
+    // Get the header row (unit numbers)
+    const headerRow = table.getElementsByTagName("thead")[0].getElementsByTagName("tr")[0];
+    tableHtml += "<tr>";
+    Array.from(headerRow.children).forEach((cell, index) => {
+        // Only include unit numbers (skip level column if not including level)
+        if (includeLevel || index > 0) {
+            tableHtml += `<th>${cell.textContent}</th>`;
         }
-        return 'FFFFFF'; // default to white if parsing fails
+    });
+    tableHtml += "</tr>";
+
+    // Loop through all the table rows, including the last row
+    const rows = table.getElementsByTagName("tr");
+    for (let rowIndex = 1; rowIndex < rows.length; rowIndex++) {
+        const row = rows[rowIndex];
+        tableHtml += "<tr>";
+
+        const cells = row.getElementsByTagName("td");
+
+        // Loop through all the cells in the row and capture their content
+        for (let cellIndex = 0; cellIndex < cells.length; cellIndex++) {
+            const cell = cells[cellIndex];
+
+            // Skip the first cell (level column) if not including level
+            if (includeLevel || cellIndex > 0) {
+                const cellColor = rgbToHex(cell.style.backgroundColor);
+                let style = cellColor ? `background-color:#${cellColor};` : '';
+                tableHtml += `<td style="${style}">${cell.innerHTML}</td>`;
+            }
+        }
+        tableHtml += "</tr>";
     }
+
+    tableHtml += "</table>";
+
+    // Create a temporary hidden iframe to simulate the copy process
+    const iframe = document.createElement("iframe");
+    iframe.style.position = "absolute";
+    iframe.style.top = "-9999px";
+    iframe.style.left = "-9999px";
+    document.body.appendChild(iframe);
+
+    // Write the table HTML into the iframe's document
+    const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+    iframeDoc.open();
+    iframeDoc.write("<html><head><style>table, td, th {border: 1px solid black; padding: 5px;}</style></head><body>");
+    iframeDoc.write(tableHtml);
+    iframeDoc.write("</body></html>");
+    iframeDoc.close();
+
+    // Select the table in the iframe and copy it to clipboard
+    const range = iframeDoc.createRange();
+    range.selectNodeContents(iframeDoc.body);
+    const selection = iframeDoc.getSelection();
+    selection.removeAllRanges();
+    selection.addRange(range);
+    iframeDoc.execCommand("copy");
+
+    // Clean up the iframe after the operation
+    document.body.removeChild(iframe);
+
+    // Create and show a temporary message
+    const message = document.createElement("div");
+    message.textContent = includeLevel
+        ? "Colors with level successfully copied"
+        : "Colors successfully copied";
+    message.style.position = "fixed";
+    message.style.top = "20px";
+    message.style.left = "50%";
+    message.style.transform = "translateX(-50%)";
+    message.style.padding = "10px 20px";
+    message.style.backgroundColor = "#4CAF50";
+    message.style.color = "#fff";
+    message.style.fontSize = "16px";
+    message.style.borderRadius = "5px";
+    message.style.zIndex = "9999";
+    document.body.appendChild(message);
+
+    // Remove the message after 2 seconds
+    setTimeout(() => {
+        message.remove();
+    }, 2000);
+}
+
+// Function to convert RGB to Hex color code
+function rgbToHex(rgb) {
+    const result = rgb.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
+    if (result) {
+        const r = parseInt(result[1]).toString(16).padStart(2, '0');
+        const g = parseInt(result[2]).toString(16).padStart(2, '0');
+        const b = parseInt(result[3]).toString(16).padStart(2, '0');
+        return r + g + b;
+    }
+    return 'FFFFFF'; // default to white if parsing fails
+}
 
 
     </script>
