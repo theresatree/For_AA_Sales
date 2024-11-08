@@ -71,6 +71,7 @@
 <body>
     <h1>Filter Data and Generate Excel</h1>
     <p>Paste your data below (e.g., "A TOH GUAN ROAD #02-50"):</p>
+    <p>Version 2</p>
     <textarea id="inputData" placeholder="Paste data here..."></textarea>
     <div class="controls">
         <button onclick="processData()">Process Data</button>
@@ -229,7 +230,6 @@
             }
             return 'FFFFFF'; // default to white if parsing fails
         }
-
         function copyTable(includeLevel) {
             const table = document.getElementById("dataTable");
             let tableHtml = "<table>";
@@ -243,9 +243,6 @@
                     const cellColor = rgbToHex(cell.style.backgroundColor);
                     let style = cellColor ? `background-color:#${cellColor};` : '';
                     
-                    // Skip the first column (level) if not needed
-                    if (rowIndex > 0 && !includeLevel && cellIndex === 0) return;
-        
                     tableHtml += `<td style="${style}">${cell.innerHTML}</td>`;
                 });
                 tableHtml += "</tr>";
@@ -279,7 +276,25 @@
             // Clean up the iframe after the operation
             document.body.removeChild(iframe);
         
-            alert("Table colors copied " + (includeLevel ? "with the Level column." : "without the Level column."));
+            // Create and show a temporary message
+            const message = document.createElement("div");
+            message.textContent = "Table colors copied!";
+            message.style.position = "fixed";
+            message.style.top = "20px";
+            message.style.left = "50%";
+            message.style.transform = "translateX(-50%)";
+            message.style.padding = "10px 20px";
+            message.style.backgroundColor = "#4CAF50";
+            message.style.color = "#fff";
+            message.style.fontSize = "16px";
+            message.style.borderRadius = "5px";
+            message.style.zIndex = "9999";
+            document.body.appendChild(message);
+        
+            // Remove the message after 2 seconds
+            setTimeout(() => {
+                message.remove();
+            }, 2000);
         }
 
     </script>
