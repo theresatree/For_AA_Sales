@@ -199,7 +199,7 @@
 
         function copyTable(includeLevel) {
             const table = document.getElementById("dataTable");
-            let tableContent = "";
+            let tableContent = [];
 
             const rows = table.getElementsByTagName("tr");
             Array.from(rows).forEach((row, rowIndex) => {
@@ -207,8 +207,10 @@
                 let rowContent = [];
                 Array.from(cells).forEach((cell, cellIndex) => {
                     if (includeLevel || cellIndex !== 0) {
-                        // Get background color of each cell
+                        // Get the background color of each cell
                         const color = cell.style.backgroundColor;
+
+                        // Represent the color as the appropriate format for Excel
                         if (color === 'rgb(0, 255, 0)') {
                             rowContent.push('Green');
                         } else if (color === 'rgb(255, 0, 0)') {
@@ -218,21 +220,21 @@
                         } else if (color === 'rgb(255, 255, 255)') {
                             rowContent.push('White');
                         } else {
-                            rowContent.push(''); // Empty for no color
+                            rowContent.push(''); // Empty if no color
                         }
                     }
                 });
-                tableContent += rowContent.join(",") + "\n";
+                tableContent.push(rowContent.join("\t"));
             });
 
             const textarea = document.createElement("textarea");
-            textarea.value = tableContent;
+            textarea.value = tableContent.join("\n");
             document.body.appendChild(textarea);
             textarea.select();
             document.execCommand('copy');
             document.body.removeChild(textarea);
 
-            alert("Table content copied (only colors).");
+            alert("Table content copied with color formatting.");
         }
     </script>
 </body>
