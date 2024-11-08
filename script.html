@@ -205,28 +205,6 @@
             const table = document.getElementById("dataTable");
             const ws = XLSX.utils.table_to_sheet(table, { sheet: "Sheet1" });
 
-            // Manually apply background colors to the cells in the sheet
-            const rows = table.rows;
-            for (let rowIndex = 1; rowIndex < rows.length; rowIndex++) {  // Start at 1 to skip the header row
-                const row = rows[rowIndex];
-                for (let colIndex = 1; colIndex < row.cells.length; colIndex++) {  // Start at 1 to skip the Level column
-                    const cell = row.cells[colIndex];
-                    const cellAddress = { r: rowIndex - 1, c: colIndex - 1 };  // Correct the indices for Excel sheet format
-
-                    // Apply the background color to the corresponding cell
-                    if (cell.style.backgroundColor === 'rgb(0, 255, 0)') {  // Green (A)
-                        ws[XLSX.utils.encode_cell(cellAddress)].s = { fill: { fgColor: { rgb: "00FF00" } } };
-                    } else if (cell.style.backgroundColor === 'rgb(255, 0, 0)') {  // Red (C)
-                        ws[XLSX.utils.encode_cell(cellAddress)].s = { fill: { fgColor: { rgb: "FF0000" } } };
-                    } else if (cell.style.backgroundColor === 'rgb(0, 0, 0)') {  // Black (undefined)
-                        ws[XLSX.utils.encode_cell(cellAddress)].s = { fill: { fgColor: { rgb: "000000" } } };
-                    } else {  // White (default)
-                        ws[XLSX.utils.encode_cell(cellAddress)].s = { fill: { fgColor: { rgb: "FFFFFF" } } };
-                    }
-                }
-            }
-
-            // Define column widths
             const colWidth = [];
             for (let i = 0; i < table.rows[0].cells.length; i++) {
                 colWidth.push({ wpx: 80 });
