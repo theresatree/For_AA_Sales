@@ -78,7 +78,6 @@
 
     <h3>Filtered Data:</h3>
     <div>You can choose to copy or download the table.</div>
-    <p>Version 2</p>
     <table id="dataTable">
         <thead></thead>
         <tbody></tbody>
@@ -165,16 +164,16 @@
                     const value = levelData[level][unit];
 
                     if (value === 'A') {
-                        td.style.backgroundColor = '#00FF00';
+                        td.style.backgroundColor = '#00FF00'; // Green
                     } else if (value === 'C') {
-                        td.style.backgroundColor = '#FF0000';
+                        td.style.backgroundColor = '#FF0000'; // Red
                     } else if (value === undefined) {
-                        td.style.backgroundColor = '#000000';
+                        td.style.backgroundColor = '#000000'; // Black
                     } else {
-                        td.style.backgroundColor = '#FFFFFF';
+                        td.style.backgroundColor = '#FFFFFF'; // White
                     }
 
-                    td.textContent = value || '';
+                    td.textContent = ''; // Don't display text, only color
                     tr.appendChild(td);
                 });
 
@@ -208,7 +207,19 @@
                 let rowContent = [];
                 Array.from(cells).forEach((cell, cellIndex) => {
                     if (includeLevel || cellIndex !== 0) {
-                        rowContent.push(cell.textContent.trim());
+                        // Get background color of each cell
+                        const color = cell.style.backgroundColor;
+                        if (color === 'rgb(0, 255, 0)') {
+                            rowContent.push('Green');
+                        } else if (color === 'rgb(255, 0, 0)') {
+                            rowContent.push('Red');
+                        } else if (color === 'rgb(0, 0, 0)') {
+                            rowContent.push('Black');
+                        } else if (color === 'rgb(255, 255, 255)') {
+                            rowContent.push('White');
+                        } else {
+                            rowContent.push(''); // Empty for no color
+                        }
                     }
                 });
                 tableContent += rowContent.join(",") + "\n";
@@ -221,7 +232,7 @@
             document.execCommand('copy');
             document.body.removeChild(textarea);
 
-            alert("Table content copied" + (includeLevel ? " with the Level column." : " without the Level column."));
+            alert("Table content copied (only colors).");
         }
     </script>
 </body>
