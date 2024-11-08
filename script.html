@@ -196,8 +196,7 @@
                 message.remove();
             }
         }
-        
-function copyTable(includeLevel) {
+        function copyTable(includeLevel) {
     const inputData = document.getElementById('inputData').value.trim();
     const rows = inputData.split('\n');
     const levelData = {};
@@ -237,15 +236,7 @@ function copyTable(includeLevel) {
 
     const unitArray = Array.from(unitNumbers).sort((a, b) => parseInt(a) - parseInt(b));
 
-    let tableHtml = "<table>";
-
-    // Header Row
-    tableHtml += "<tr>";
-    tableHtml += "<th>Level</th>";
-    unitArray.forEach(unit => {
-        tableHtml += `<th>${unit}</th>`;
-    });
-    tableHtml += "</tr>";
+    let tableText = "Level\t" + unitArray.join("\t") + "\n"; // Start with the header row
 
     // Levels Row
     const levels = Object.keys(levelData);
@@ -256,79 +247,67 @@ function copyTable(includeLevel) {
     }
 
     sortedLevels.forEach(level => {
-        tableHtml += "<tr>";
-        tableHtml += `<td>${level}</td>`;
+        let rowText = level;
         unitArray.forEach(unit => {
             const value = levelData[level][unit];
-            let cellColor = '#FFFFFF'; // Default to white
+            let cellColor = '';
 
             if (value === 'A') {
-                cellColor = '#00FF00'; // Green
+                cellColor = 'Green';
             } else if (value === 'C') {
-                cellColor = '#FF0000'; // Red
+                cellColor = 'Red';
             } else if (value === undefined) {
-                cellColor = '#000000'; // Black
+                cellColor = 'Black';
+            } else {
+                cellColor = 'White';
             }
 
-            tableHtml += `<td style="background-color:${cellColor};"></td>`; // Empty cell with color
+            rowText += "\t" + cellColor; // Append color info instead of using actual color codes
         });
-        tableHtml += "</tr>";
+        tableText += rowText + "\n"; // Add the row to the final text
     });
 
-    tableHtml += "</table>";
+    // Create a hidden textarea to copy the table data
+    const textarea = document.createElement("textarea");
+    textarea.value = tableText;
+    document.body.appendChild(textarea);
 
-    // Create a temporary hidden iframe to simulate the copy process
-    const iframe = document.createElement("iframe");
-    iframe.style.position = "absolute";
-    iframe.style.top = "-9999px";
-    iframe.style.left = "-9999px";
-    document.body.appendChild(iframe);
+    // Select the text in the textarea
+    textarea.select();
+    textarea.setSelectionRange(0, textarea.value.length);
 
-    // Write the table HTML into the iframe's document
-    const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-    iframeDoc.open();
-    iframeDoc.write("<html><head><style>table, td, th {border: 1px solid black; padding: 5px;}</style></head><body>");
-    iframeDoc.write(tableHtml);
-    iframeDoc.write("</body></html>");
-    iframeDoc.close();
+    // Execute the copy command
+    const successful = document.execCommand("copy");
 
-    // Ensure the content is loaded, select the entire content, and then copy
-    iframe.onload = function() {
-        const range = iframeDoc.createRange();
-        range.selectNodeContents(iframeDoc.body);
-        const selection = iframeDoc.getSelection();
-        selection.removeAllRanges();
-        selection.addRange(range);
+    // Remove the textarea after copying
+    document.body.removeChild(textarea);
 
-        // Copy the content to clipboard
-        iframeDoc.execCommand("copy");
+    // Create and show a temporary message
+    const message = document.createElement("div");
+    message.textContent = includeLevel
+        ? "Colors with level successfully copied"
+        : "Colors successfully copied";
+    message.style.position = "fixed";
+    message.style.top = "20px";
+    message.style.left = "50%";
+    message.style.transform = "translateX(-50%)";
+    message.style.padding = "10px 20px";
+    message.style.backgroundColor = "#4CAF50";
+    message.style.color = "#fff";
+    message.style.fontSize = "16px";
+    message.style.borderRadius = "5px";
+    message.style.zIndex = "9999";
+    document.body.appendChild(message);
 
-        // Clean up the iframe after the operation
-        document.body.removeChild(iframe);
+    // Remove the message after 2 seconds
+    setTimeout(() => {
+        message.remove();
+    }, 2000);
 
-        // Create and show a temporary message
-        const message = document.createElement("div");
-        message.textContent = includeLevel
-            ? "Colors with level successfully copied"
-            : "Colors successfully copied";
-        message.style.position = "fixed";
-        message.style.top = "20px";
-        message.style.left = "50%";
-        message.style.transform = "translateX(-50%)";
-        message.style.padding = "10px 20px";
-        message.style.backgroundColor = "#4CAF50";
-        message.style.color = "#fff";
-        message.style.fontSize = "16px";
-        message.style.borderRadius = "5px";
-        message.style.zIndex = "9999";
-        document.body.appendChild(message);
-
-        // Remove the message after 2 seconds
-        setTimeout(() => {
-            message.remove();
-        }, 2000);
-    };
+    // Log the copy result for debugging
+    console.log(successful ? "Copy successful" : "Copy failed");
 }
+
 
 
 
