@@ -10,6 +10,10 @@
         button { margin-top: 10px; }
         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
         th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        .green { background-color: green; color: white; }
+        .red { background-color: red; color: white; }
+        .black { background-color: black; color: white; }
+        .empty { background-color: white; }
     </style>
 </head>
 <body>
@@ -63,8 +67,12 @@
                 }
             });
 
-            // Convert unitNumbers to a sorted array
-            const unitArray = Array.from(unitNumbers).sort((a, b) => parseInt(a) - parseInt(b));
+            // Convert unitNumbers to a sorted array, but ensure #01 is always the last one
+            let unitArray = Array.from(unitNumbers).sort((a, b) => parseInt(a) - parseInt(b));
+            if (unitArray.includes('01')) {
+                unitArray = unitArray.filter(unit => unit !== '01');  // Remove #01 temporarily
+                unitArray.push('01');  // Add #01 at the end
+            }
 
             // Create table headers dynamically based on the unique unit numbers
             const tableHeader = document.getElementById('dataTable').getElementsByTagName('thead')[0];
@@ -93,7 +101,20 @@
 
                 unitArray.forEach(unit => {
                     const td = document.createElement('td');
-                    td.textContent = levelData[level][unit] || ''; // If no data, leave empty
+                    const value = levelData[level][unit] || '';
+                    td.textContent = value;
+
+                    // Apply the appropriate styles
+                    if (value === 'A') {
+                        td.classList.add('green');
+                    } else if (value === 'C') {
+                        td.classList.add('red');
+                    } else if (value === '') {
+                        td.classList.add('empty');
+                    } else {
+                        td.classList.add('black');
+                    }
+
                     tr.appendChild(td);
                 });
 
