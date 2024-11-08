@@ -185,16 +185,49 @@
             const table = document.getElementById("dataTable");
             const ws = XLSX.utils.table_to_sheet(table, { sheet: "Sheet1" });
 
+            // Apply column width and colors to the Excel file
             const colWidth = [];
             for (let i = 0; i < table.rows[0].cells.length; i++) {
                 colWidth.push({ wpx: 80 });
             }
-
             ws['!cols'] = colWidth;
+
+            // Handle cell background colors in the Excel file
+            const rows = table.rows;
+            for (let i = 0; i < rows.length; i++) {
+                for (let j = 0; j < rows[i].cells.length; j++) {
+                    const cell = rows[i].cells[j];
+                    const cellColor = cell.style.backgroundColor;
+                    const cellAddress = XLSX.utils.encode_cell({ r: i, c: j });
+
+                    if (cellColor) {
+                        const hexColor = rgbToHex(cellColor);
+                        if (!ws[cellAddress]) {
+                            ws[cellAddress] = {};
+                        }
+                        ws[cellAddress].s = {
+                            fill: {
+                                fgColor: { rgb: hexColor }
+                            }
+                        };
+                    }
+                }
+            }
 
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
             XLSX.writeFile(wb, "filtered_data.xlsx");
+        }
+
+        function rgbToHex(rgb) {
+            const result = rgb.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
+            if (result) {
+                const r = parseInt(result[1]).toString(16).padStart(2, '0');
+                const g = parseInt(result[2]).toString(16).padStart(2, '0');
+                const b = parseInt(result[3]).toString(16).padStart(2, '0');
+                return r + g + b;
+            }
+            return 'FFFFFF'; // default to white if parsing fails
         }
 
         function copyTable(includeLevel) {
@@ -206,35 +239,25 @@
                 const cells = row.getElementsByTagName("td");
                 let rowContent = [];
                 Array.from(cells).forEach((cell, cellIndex) => {
-                    if (includeLevel || cellIndex !== 0) {
-                        // Get the background color of each cell
-                        const color = cell.style.backgroundColor;
-
-                        // Represent the color as the appropriate format for Excel
-                        if (color === 'rgb(0, 255, 0)') {
-                            rowContent.push('Green');
-                        } else if (color === 'rgb(255, 0, 0)') {
-                            rowContent.push('Red');
-                        } else if (color === 'rgb(0, 0, 0)') {
-                            rowContent.push('Black');
-                        } else if (color === 'rgb(255, 255, 255)') {
-                            rowContent.push('White');
-                        } else {
-                            rowContent.push(''); // Empty if no color
-                        }
+                    if (cell.style.backgroundColor) {
+                        const cellColor = rgbToHex(cell.style.backgroundColor);
+                        rowContent.push(cellColor);
+                    } else {
+                        rowContent.push('');
                     }
                 });
-                tableContent.push(rowContent.join("\t"));
+                tableContent.push(rowContent);
             });
 
+            // Copy to clipboard as CSV formatted text (background color information only)
             const textarea = document.createElement("textarea");
-            textarea.value = tableContent.join("\n");
+            textarea.value = tableContent.map(row => row.join("\t")).join("\n");
             document.body.appendChild(textarea);
             textarea.select();
             document.execCommand('copy');
             document.body.removeChild(textarea);
 
-            alert("Table content copied with color formatting.");
+            alert("Table colors copied" + (includeLevel ? " with the Level column." : " without the Level column."));
         }
     </script>
 </body>
