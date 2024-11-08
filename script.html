@@ -71,7 +71,7 @@
 <body>
     <h1>Filter Data and Generate Excel</h1>
     <p>Paste your data below (e.g., "A TOH GUAN ROAD #02-50"):</p>
-    <p>version 5555</p>
+    <p>version 9999</p>
     <textarea id="inputData" placeholder="Paste data here..."></textarea>
     <div class="controls">
         <button onclick="processData()">Process Data</button>
@@ -79,7 +79,7 @@
     </div>
 
     <h3>Filtered Data:</h3>
-    <div>You can choose to copy or download the table.</div>
+    <div>You can choose to copy the table with or without the "Level" column.</div>
     <table id="dataTable">
         <thead></thead>
         <tbody></tbody>
@@ -287,6 +287,19 @@ function copyTable(includeLevel) {
         message.remove();
     }, 2000);
 }
+
+        // Function to convert RGB to Hex color code
+function rgbToHex(rgb) {
+    const result = rgb.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
+    if (result) {
+        const r = parseInt(result[1]).toString(16).padStart(2, '0');
+        const g = parseInt(result[2]).toString(16).padStart(2, '0');
+        const b = parseInt(result[3]).toString(16).padStart(2, '0');
+        return r + g + b;
+    }
+    return 'FFFFFF'; // default to white if parsing fails
+}
+
 
 
     </script>
