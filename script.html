@@ -6,48 +6,83 @@
     <title>Data Filter and Excel Generator</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
     <style>
-        textarea { width: 100%; height: 200px; }
-        button { margin-top: 10px; }
+        /* Center the main content */
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        textarea { 
+            width: 50%; /* Reduced from 100% to 50% */
+            height: 200px;
+            margin: 0 auto;
+            display: block;
+        }
+        
+        /* Style for both buttons */
+        button {
+            margin: 10px;
+            padding: 12px 24px; /* Increased padding for bigger buttons */
+            font-size: 16px; /* Larger font size */
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+        }
+        
+        button:hover {
+            background-color: #45a049;
+        }
+        
         table { 
             width: 50%; 
             border-collapse: collapse; 
-            margin-top: 20px;
+            margin: 20px auto; /* Added auto margins for centering */
             user-select: all;
-            margin-left: auto;
-            margin-right: auto;
         }
+        
         th, td { 
             border: 1px solid #ddd; 
             padding: 8px; 
             text-align: center;
             vertical-align: middle;
         }
-        .container {
+        
+        /* Center all other elements */
+        h1, h3, p, div {
             text-align: center;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
+            width: 100%;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Filter Data and Generate Excel</h1>
-        <p>Paste your data below (e.g., "A TOH GUAN ROAD #02-50"):</p>
-        <textarea id="inputData" placeholder="Paste data here..."></textarea>
-        <br>
+    <h1>Filter Data and Generate Excel</h1>
+    <p>Paste your data below (e.g., "A TOH GUAN ROAD #02-50"):</p>
+    <textarea id="inputData" placeholder="Paste data here..."></textarea>
+    <div class="controls">
         <button onclick="processData()">Process Data</button>
-        
-        <h3>Filtered Data:</h3>
-        <div>You can now select and copy the table directly into Excel</div>
-        <table id="dataTable">
-            <thead>
-            </thead>
-            <tbody>
-            </tbody>
-        </table>
-        
-        <button onclick="generateExcel()">Generate Excel</button>
+    </div>
+    
+    <h3>Filtered Data:</h3>
+    <div>You can now select and copy the table directly into Excel</div>
+    <table id="dataTable">
+        <thead>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+    
+    <div class="controls">
+        <button onclick="generateExcel()">Download as Excel</button>
     </div>
 
     <script>
@@ -98,11 +133,10 @@
             const tableHeader = document.getElementById('dataTable').getElementsByTagName('thead')[0];
             tableHeader.innerHTML = '';
             const headerRow = document.createElement('tr');
-            
-            const levelHeader = document.createElement('th');
-            levelHeader.textContent = 'Level';
-            levelHeader.style.textAlign = 'center';
-            headerRow.appendChild(levelHeader);
+            const firstTh = document.createElement('th');
+            firstTh.textContent = 'Level';
+            firstTh.style.textAlign = 'center';
+            headerRow.appendChild(firstTh);
             
             unitArray.forEach(unit => {
                 const th = document.createElement('th');
@@ -141,4 +175,37 @@
                     
                     // Apply background colors directly as styles
                     if (value === 'A') {
-                        t
+                        td.style.backgroundColor = '#00FF00'; // Green
+                    } else if (value === 'C') {
+                        td.style.backgroundColor = '#FF0000'; // Red
+                    } else if (value === undefined) {
+                        td.style.backgroundColor = '#000000'; // Black
+                    } else {
+                        td.style.backgroundColor = '#FFFFFF'; // White for space
+                    }
+
+                    tr.appendChild(td);
+                });
+
+                tableBody.appendChild(tr);
+            });
+        }
+
+        function generateExcel() {
+            const table = document.getElementById("dataTable");
+            const ws = XLSX.utils.table_to_sheet(table, { sheet: "Sheet1" });
+
+            const colWidth = [];
+            for (let i = 0; i < table.rows[0].cells.length; i++) {
+                colWidth.push({ wpx: 80 });
+            }
+
+            ws['!cols'] = colWidth;
+
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
+            XLSX.writeFile(wb, "filtered_data.xlsx");
+        }
+    </script>
+</body>
+</html>
