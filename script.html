@@ -71,6 +71,7 @@
 <body>
     <h1>Filter Data and Generate Excel</h1>
     <p>Paste your data below (e.g., "A TOH GUAN ROAD #02-50"):</p>
+    <p>version2</p>
     <textarea id="inputData" placeholder="Paste data here..."></textarea>
     <div class="controls">
         <button onclick="processData()">Process Data</button>
@@ -180,132 +181,141 @@
                 tableBody.appendChild(tr);
             });
         }
-
-        function generateExcel() {
-            const table = document.getElementById("dataTable");
-            const ws = XLSX.utils.table_to_sheet(table, { sheet: "Sheet1" });
-
-            // Apply column width and colors to the Excel file
-            const colWidth = [];
-            for (let i = 0; i < table.rows[0].cells.length; i++) {
-                colWidth.push({ wpx: 80 });
-            }
-            ws['!cols'] = colWidth;
-
-            // Handle cell background colors in the Excel file
-            const rows = table.rows;
-            for (let i = 0; i < rows.length; i++) {
-                for (let j = 0; j < rows[i].cells.length; j++) {
-                    const cell = rows[i].cells[j];
-                    const cellColor = cell.style.backgroundColor;
-                    const cellAddress = XLSX.utils.encode_cell({ r: i, c: j });
-
-                    if (cellColor) {
-                        const hexColor = rgbToHex(cellColor);
-                        if (!ws[cellAddress]) {
-                            ws[cellAddress] = {};
-                        }
-                        ws[cellAddress].s = {
-                            fill: {
-                                fgColor: { rgb: hexColor }
-                            }
-                        };
-                    }
-                }
-            }
-
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
-            XLSX.writeFile(wb, "filtered_data.xlsx");
-        }
-
-        function rgbToHex(rgb) {
-            const result = rgb.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
-            if (result) {
-                const r = parseInt(result[1]).toString(16).padStart(2, '0');
-                const g = parseInt(result[2]).toString(16).padStart(2, '0');
-                const b = parseInt(result[3]).toString(16).padStart(2, '0');
-                return r + g + b;
-            }
-            return 'FFFFFF'; // default to white if parsing fails
-        }
-        function copyTable(includeLevel) {
-            const table = document.getElementById("dataTable");
-            let tableHtml = "<table>";
-        
-            // Get the header row (unit numbers)
-            const headerRow = table.getElementsByTagName("thead")[0].getElementsByTagName("tr")[0];
-            tableHtml += "<tr>";
-            Array.from(headerRow.children).forEach(cell => {
+    // Function to copy the table, optionally including the level
+    function copyTable(includeLevel) {
+        const table = document.getElementById("dataTable");
+        let tableHtml = "<table>";
+    
+        // Get the header row (unit numbers)
+        const headerRow = table.getElementsByTagName("thead")[0].getElementsByTagName("tr")[0];
+        tableHtml += "<tr>";
+        Array.from(headerRow.children).forEach((cell, index) => {
+            // Only include unit numbers (skip level column if not including level)
+            if (includeLevel || index > 0) {
                 tableHtml += `<th>${cell.textContent}</th>`;
-            });
-            tableHtml += "</tr>";
-        
-            // Generate the table rows including the colors
-            const rows = table.getElementsByTagName("tr");
-            Array.from(rows).forEach((row, rowIndex) => {
-                // Skip the first row (header row) as we've already added it
-                if (rowIndex === 0) return;
-        
-                tableHtml += "<tr>";
-                const cells = row.getElementsByTagName("td");
-                Array.from(cells).forEach((cell, cellIndex) => {
+            }
+        });
+        tableHtml += "</tr>";
+    
+        // Generate the table rows including the colors
+        const rows = table.getElementsByTagName("tr");
+        Array.from(rows).forEach((row, rowIndex) => {
+            // Skip the first row (header row) as we've already added it
+            if (rowIndex === 0) return;
+    
+            tableHtml += "<tr>";
+            const cells = row.getElementsByTagName("td");
+            Array.from(cells).forEach((cell, cellIndex) => {
+                // Skip the first cell (level column) if not including level
+                if (includeLevel || cellIndex > 0) {
                     const cellColor = rgbToHex(cell.style.backgroundColor);
                     let style = cellColor ? `background-color:#${cellColor};` : '';
                     tableHtml += `<td style="${style}">${cell.innerHTML}</td>`;
-                });
-                tableHtml += "</tr>";
+                }
             });
-        
-            tableHtml += "</table>";
-        
-            // Create a temporary hidden iframe to simulate the copy process
-            const iframe = document.createElement("iframe");
-            iframe.style.position = "absolute";
-            iframe.style.top = "-9999px";
-            iframe.style.left = "-9999px";
-            document.body.appendChild(iframe);
-        
-            // Write the table HTML into the iframe's document
-            const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-            iframeDoc.open();
-            iframeDoc.write("<html><head><style>table, td, th {border: 1px solid black; padding: 5px;}</style></head><body>");
-            iframeDoc.write(tableHtml);
-            iframeDoc.write("</body></html>");
-            iframeDoc.close();
-        
-            // Select the table in the iframe and copy it to clipboard
-            const range = iframeDoc.createRange();
-            range.selectNodeContents(iframeDoc.body);
-            const selection = iframeDoc.getSelection();
-            selection.removeAllRanges();
-            selection.addRange(range);
-            iframeDoc.execCommand("copy");
-        
-            // Clean up the iframe after the operation
-            document.body.removeChild(iframe);
-        
-            // Create and show a temporary message
-            const message = document.createElement("div");
-            message.textContent = "Table colors and unit numbers copied!";
-            message.style.position = "fixed";
-            message.style.top = "0px";
-            message.style.left = "50%";
-            message.style.transform = "translateX(-50%)";
-            message.style.padding = "10px 20px";
-            message.style.backgroundColor = "#4CAF50";
-            message.style.color = "#fff";
-            message.style.fontSize = "16px";
-            message.style.borderRadius = "5px";
-            message.style.zIndex = "9999";
-            document.body.appendChild(message);
-        
-            // Remove the message after 2 seconds
-            setTimeout(() => {
-                message.remove();
-            }, 2000);
+            tableHtml += "</tr>";
+        });
+    
+        tableHtml += "</table>";
+    
+        // Create a temporary hidden iframe to simulate the copy process
+        const iframe = document.createElement("iframe");
+        iframe.style.position = "absolute";
+        iframe.style.top = "-9999px";
+        iframe.style.left = "-9999px";
+        document.body.appendChild(iframe);
+    
+        // Write the table HTML into the iframe's document
+        const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+        iframeDoc.open();
+        iframeDoc.write("<html><head><style>table, td, th {border: 1px solid black; padding: 5px;}</style></head><body>");
+        iframeDoc.write(tableHtml);
+        iframeDoc.write("</body></html>");
+        iframeDoc.close();
+    
+        // Select the table in the iframe and copy it to clipboard
+        const range = iframeDoc.createRange();
+        range.selectNodeContents(iframeDoc.body);
+        const selection = iframeDoc.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
+        iframeDoc.execCommand("copy");
+    
+        // Clean up the iframe after the operation
+        document.body.removeChild(iframe);
+    
+        // Create and show a temporary message
+        const message = document.createElement("div");
+        message.textContent = includeLevel
+            ? "Colors with level successfully copied"
+            : "Colors successfully copied";
+        message.style.position = "fixed";
+        message.style.top = "0px";
+        message.style.left = "50%";
+        message.style.transform = "translateX(-50%)";
+        message.style.padding = "10px 20px";
+        message.style.backgroundColor = "#4CAF50";
+        message.style.color = "#fff";
+        message.style.fontSize = "16px";
+        message.style.borderRadius = "5px";
+        message.style.zIndex = "9999";
+        document.body.appendChild(message);
+    
+        // Remove the message after 2 seconds
+        setTimeout(() => {
+            message.remove();
+        }, 2000);
+    }
+    
+    // Function to generate the Excel file with color fill
+    function generateExcel() {
+        const table = document.getElementById("dataTable");
+        const ws = XLSX.utils.table_to_sheet(table, { sheet: "Sheet1" });
+    
+        // Apply column width and colors to the Excel file
+        const colWidth = [];
+        for (let i = 0; i < table.rows[0].cells.length; i++) {
+            colWidth.push({ wpx: 80 });
         }
-
+        ws['!cols'] = colWidth;
+    
+        // Handle cell background colors in the Excel file
+        const rows = table.rows;
+        for (let i = 1; i < rows.length; i++) {  // start from 1 to skip the header row
+            for (let j = 0; j < rows[i].cells.length; j++) {
+                const cell = rows[i].cells[j];
+                const cellColor = rgbToHex(cell.style.backgroundColor);
+                const cellAddress = XLSX.utils.encode_cell({ r: i - 1, c: j }); // Adjust row index for sheet
+    
+                if (cellColor) {
+                    if (!ws[cellAddress]) {
+                        ws[cellAddress] = {};
+                    }
+                    ws[cellAddress].s = {
+                        fill: {
+                            fgColor: { rgb: cellColor }
+                        }
+                    };
+                }
+            }
+        }
+    
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
+        XLSX.writeFile(wb, "filtered_data.xlsx");
+    }
+    
+    // Function to convert RGB to Hex color code
+    function rgbToHex(rgb) {
+        const result = rgb.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
+        if (result) {
+            const r = parseInt(result[1]).toString(16).padStart(2, '0');
+            const g = parseInt(result[2]).toString(16).padStart(2, '0');
+            const b = parseInt(result[3]).toString(16).padStart(2, '0');
+            return r + g + b;
+        }
+        return 'FFFFFF'; // default to white if parsing fails
+    }
 
     </script>
 </body>
