@@ -71,7 +71,6 @@
 <body>
     <h1>Filter Data and Generate Excel</h1>
     <p>Paste your data below (e.g., "A TOH GUAN ROAD #02-50"):</p>
-    <p>Version 2</p>
     <textarea id="inputData" placeholder="Paste data here..."></textarea>
     <div class="controls">
         <button onclick="processData()">Process Data</button>
@@ -235,7 +234,7 @@
             const table = document.getElementById("dataTable");
             let tableHtml = "<table>";
         
-            // Create the HTML table content
+            // Generate the HTML table content with inline styles
             const rows = table.getElementsByTagName("tr");
             Array.from(rows).forEach((row, rowIndex) => {
                 tableHtml += "<tr>";
@@ -254,16 +253,35 @@
         
             tableHtml += "</table>";
         
-            // Create a temporary textarea to copy the table HTML to clipboard
-            const textarea = document.createElement("textarea");
-            textarea.value = tableHtml;
-            document.body.appendChild(textarea);
-            textarea.select();
-            document.execCommand('copy');
-            document.body.removeChild(textarea);
+            // Create a temporary hidden iframe to simulate the copy process
+            const iframe = document.createElement("iframe");
+            iframe.style.position = "absolute";
+            iframe.style.top = "-9999px";
+            iframe.style.left = "-9999px";
+            document.body.appendChild(iframe);
+        
+            // Write the table HTML into the iframe's document
+            const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+            iframeDoc.open();
+            iframeDoc.write("<html><head><style>table, td {border: 1px solid black;}</style></head><body>");
+            iframeDoc.write(tableHtml);
+            iframeDoc.write("</body></html>");
+            iframeDoc.close();
+        
+            // Select the table in the iframe and copy it to clipboard
+            const range = iframeDoc.createRange();
+            range.selectNodeContents(iframeDoc.body);
+            const selection = iframeDoc.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            iframeDoc.execCommand("copy");
+        
+            // Clean up the iframe after the operation
+            document.body.removeChild(iframe);
         
             alert("Table colors copied " + (includeLevel ? "with the Level column." : "without the Level column."));
         }
+
     </script>
 </body>
 </html>
