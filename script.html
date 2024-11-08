@@ -71,6 +71,7 @@
 <body>
     <h1>Filter Data and Generate Excel</h1>
     <p>Paste your data below (e.g., "A TOH GUAN ROAD #02-50"):</p>
+    <p>Version 2</p>
     <textarea id="inputData" placeholder="Paste data here..."></textarea>
     <div class="controls">
         <button onclick="processData()">Process Data</button>
@@ -232,32 +233,36 @@
 
         function copyTable(includeLevel) {
             const table = document.getElementById("dataTable");
-            let tableContent = [];
-
+            let tableHtml = "<table>";
+        
+            // Create the HTML table content
             const rows = table.getElementsByTagName("tr");
             Array.from(rows).forEach((row, rowIndex) => {
+                tableHtml += "<tr>";
                 const cells = row.getElementsByTagName("td");
-                let rowContent = [];
                 Array.from(cells).forEach((cell, cellIndex) => {
-                    if (cell.style.backgroundColor) {
-                        const cellColor = rgbToHex(cell.style.backgroundColor);
-                        rowContent.push(cellColor);
-                    } else {
-                        rowContent.push('');
-                    }
+                    const cellColor = rgbToHex(cell.style.backgroundColor);
+                    let style = cellColor ? `background-color:#${cellColor};` : '';
+                    
+                    // Skip the first column (level) if not needed
+                    if (rowIndex > 0 && !includeLevel && cellIndex === 0) return;
+        
+                    tableHtml += `<td style="${style}">${cell.innerHTML}</td>`;
                 });
-                tableContent.push(rowContent);
+                tableHtml += "</tr>";
             });
-
-            // Copy to clipboard as CSV formatted text (background color information only)
+        
+            tableHtml += "</table>";
+        
+            // Create a temporary textarea to copy the table HTML to clipboard
             const textarea = document.createElement("textarea");
-            textarea.value = tableContent.map(row => row.join("\t")).join("\n");
+            textarea.value = tableHtml;
             document.body.appendChild(textarea);
             textarea.select();
             document.execCommand('copy');
             document.body.removeChild(textarea);
-
-            alert("Table colors copied" + (includeLevel ? " with the Level column." : " without the Level column."));
+        
+            alert("Table colors copied " + (includeLevel ? "with the Level column." : "without the Level column."));
         }
     </script>
 </body>
