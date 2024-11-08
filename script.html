@@ -22,9 +22,8 @@
     <table id="dataTable">
         <thead>
             <tr>
-                <th>Code</th>
-                <th>Row</th>
-                <th>Column</th>
+                <th>Level</th>
+                <th>Unit Numbers</th>
             </tr>
         </thead>
         <tbody>
@@ -38,7 +37,7 @@
         function processData() {
             const inputData = document.getElementById('inputData').value.trim();
             const rows = inputData.split('\n');
-            const filteredData = [];
+            const levelData = {};
 
             // Process each row
             rows.forEach(row => {
@@ -50,28 +49,40 @@
                     // Extract row and column from the unit (e.g., #02-50 becomes 02 and 50)
                     const unitParts = unit.replace('#', '').split('-');
                     if (unitParts.length === 2) {
-                        const rowNum = unitParts[0];
-                        const columnNum = unitParts[1];
+                        const level = unitParts[0];  // Extract the row (level)
+                        const unitNumber = unitParts[1];  // Extract the unit number
 
                         // Only include rows where the code is "A" or "C"
                         if (code === 'A' || code === 'C') {
-                            filteredData.push([code, rowNum, columnNum]);
+                            if (!levelData[level]) {
+                                levelData[level] = [];
+                            }
+                            // Add unit number to the corresponding level
+                            if (!levelData[level].includes(unitNumber)) {
+                                levelData[level].push(unitNumber);
+                            }
                         }
                     }
                 }
             });
 
-            // Display filtered data in the table
+            // Convert the levelData object to an array and display it in the table
             const tableBody = document.getElementById('dataTable').getElementsByTagName('tbody')[0];
             tableBody.innerHTML = ''; // Clear previous results
 
-            filteredData.forEach(row => {
+            // Sort levels in numerical order
+            const levels = Object.keys(levelData).sort((a, b) => parseInt(a) - parseInt(b));
+
+            levels.forEach(level => {
                 const tr = document.createElement('tr');
-                row.forEach(cell => {
-                    const td = document.createElement('td');
-                    td.textContent = cell;
-                    tr.appendChild(td);
-                });
+                const tdLevel = document.createElement('td');
+                tdLevel.textContent = level; // Level number
+                tr.appendChild(tdLevel);
+
+                const tdUnits = document.createElement('td');
+                tdUnits.textContent = levelData[level].join(' | '); // Unit numbers separated by " | "
+                tr.appendChild(tdUnits);
+
                 tableBody.appendChild(tr);
             });
         }
