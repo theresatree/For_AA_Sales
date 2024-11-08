@@ -23,8 +23,8 @@
         <thead>
             <tr>
                 <th>Code</th>
-                <th>Street</th>
-                <th>Unit Number</th>
+                <th>Row</th>
+                <th>Column</th>
             </tr>
         </thead>
         <tbody>
@@ -45,17 +45,23 @@
                 const columns = row.split(/\s+/);
                 if (columns.length >= 3) {
                     const code = columns[0].toUpperCase();
-                    const street = columns.slice(1, columns.length - 1).join(' ');
-                    const unitNumber = columns[columns.length - 1];
+                    const unit = columns[columns.length - 1].trim();
 
-                    // Filter out rows with "A" or "C" in the first column
-                    if (code === 'A' || code === 'C') {
-                        filteredData.push([code, street, unitNumber]);
+                    // Extract row and column from the unit (e.g., #02-50 becomes 02 and 50)
+                    const unitParts = unit.replace('#', '').split('-');
+                    if (unitParts.length === 2) {
+                        const rowNum = unitParts[0];
+                        const columnNum = unitParts[1];
+
+                        // Only include rows where the code is "A" or "C"
+                        if (code === 'A' || code === 'C') {
+                            filteredData.push([code, rowNum, columnNum]);
+                        }
                     }
                 }
             });
 
-            // Display filtered data
+            // Display filtered data in the table
             const tableBody = document.getElementById('dataTable').getElementsByTagName('tbody')[0];
             tableBody.innerHTML = ''; // Clear previous results
 
@@ -78,4 +84,3 @@
     </script>
 </body>
 </html>
-
