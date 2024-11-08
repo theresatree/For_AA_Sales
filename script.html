@@ -71,7 +71,6 @@
 <body>
     <h1>Filter Data and Generate Excel</h1>
     <p>Paste your data below (e.g., "A TOH GUAN ROAD #02-50"):</p>
-    <p>Version 2</p>
     <textarea id="inputData" placeholder="Paste data here..."></textarea>
     <div class="controls">
         <button onclick="processData()">Process Data</button>
@@ -234,15 +233,25 @@
             const table = document.getElementById("dataTable");
             let tableHtml = "<table>";
         
-            // Generate the HTML table content with inline styles
+            // Get the header row (unit numbers)
+            const headerRow = table.getElementsByTagName("thead")[0].getElementsByTagName("tr")[0];
+            tableHtml += "<tr>";
+            Array.from(headerRow.children).forEach(cell => {
+                tableHtml += `<th>${cell.textContent}</th>`;
+            });
+            tableHtml += "</tr>";
+        
+            // Generate the table rows including the colors
             const rows = table.getElementsByTagName("tr");
             Array.from(rows).forEach((row, rowIndex) => {
+                // Skip the first row (header row) as we've already added it
+                if (rowIndex === 0) return;
+        
                 tableHtml += "<tr>";
                 const cells = row.getElementsByTagName("td");
                 Array.from(cells).forEach((cell, cellIndex) => {
                     const cellColor = rgbToHex(cell.style.backgroundColor);
                     let style = cellColor ? `background-color:#${cellColor};` : '';
-                    
                     tableHtml += `<td style="${style}">${cell.innerHTML}</td>`;
                 });
                 tableHtml += "</tr>";
@@ -260,7 +269,7 @@
             // Write the table HTML into the iframe's document
             const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
             iframeDoc.open();
-            iframeDoc.write("<html><head><style>table, td {border: 1px solid black;}</style></head><body>");
+            iframeDoc.write("<html><head><style>table, td, th {border: 1px solid black; padding: 5px;}</style></head><body>");
             iframeDoc.write(tableHtml);
             iframeDoc.write("</body></html>");
             iframeDoc.close();
@@ -278,9 +287,9 @@
         
             // Create and show a temporary message
             const message = document.createElement("div");
-            message.textContent = "Table colors copied!";
+            message.textContent = "Table colors and unit numbers copied!";
             message.style.position = "fixed";
-            message.style.top = "20px";
+            message.style.top = "0px";
             message.style.left = "50%";
             message.style.transform = "translateX(-50%)";
             message.style.padding = "10px 20px";
@@ -296,6 +305,7 @@
                 message.remove();
             }, 2000);
         }
+
 
     </script>
 </body>
