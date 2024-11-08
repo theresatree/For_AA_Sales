@@ -8,7 +8,7 @@
     <style>
         textarea { width: 100%; height: 200px; }
         button { margin-top: 10px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        table { width: 50%; border-collapse: collapse; margin-top: 20px; }
         th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
         .green { background-color: green; }
         .red { background-color: red; }
@@ -105,6 +105,8 @@
                 tdLevel.textContent = level;
                 tr.appendChild(tdLevel);
 
+                let levelHasUnitNumber = false; // To check if any unit exists for the current level
+
                 unitArray.forEach(unit => {
                     const td = document.createElement('td');
                     const value = levelData[level][unit] || '';
@@ -121,45 +123,72 @@
                         cellColor = 'black';
                     }
 
+                    // If level has no unit number, color the cell black
+                    if (value === '') {
+                        cellColor = 'black';
+                    } else {
+                        levelHasUnitNumber = true; // Mark that level has a unit number
+                    }
+
                     td.classList.add(cellColor);
                     tr.appendChild(td);
                 });
 
-                tableBody.appendChild(tr);
-            });
-
-            // Add Level 1 data at the last row
-            const level1Row = document.createElement('tr');
-            const tdLevel1 = document.createElement('td');
-            tdLevel1.textContent = '1'; // Level 1
-            level1Row.appendChild(tdLevel1);
-
-            unitArray.forEach(unit => {
-                const td = document.createElement('td');
-                const value = level1Data[unit] || '';
-                let cellColor = '';
-
-                // Apply the appropriate styles for Level 1 (colors only, no text)
-                if (value === 'A') {
-                    cellColor = 'green';
-                } else if (value === 'C') {
-                    cellColor = 'red';
-                } else if (value === '') {
-                    cellColor = 'empty';
-                } else {
-                    cellColor = 'black';
+                // Only add the row if the level has at least one unit number
+                if (levelHasUnitNumber) {
+                    tableBody.appendChild(tr);
                 }
-
-                td.classList.add(cellColor);
-                level1Row.appendChild(td);
             });
 
-            tableBody.appendChild(level1Row);
+            // Add Level 1 data at the last row if there is any data for Level 1
+            if (Object.keys(level1Data).length > 0) {
+                const level1Row = document.createElement('tr');
+                const tdLevel1 = document.createElement('td');
+                tdLevel1.textContent = '1'; // Level 1
+                level1Row.appendChild(tdLevel1);
+
+                unitArray.forEach(unit => {
+                    const td = document.createElement('td');
+                    const value = level1Data[unit] || '';
+                    let cellColor = '';
+
+                    // Apply the appropriate styles for Level 1 (colors only, no text)
+                    if (value === 'A') {
+                        cellColor = 'green';
+                    } else if (value === 'C') {
+                        cellColor = 'red';
+                    } else if (value === '') {
+                        cellColor = 'empty';
+                    } else {
+                        cellColor = 'black';
+                    }
+
+                    td.classList.add(cellColor);
+                    level1Row.appendChild(td);
+                });
+
+                tableBody.appendChild(level1Row);
+            }
         }
 
         function generateExcel() {
             const table = document.getElementById("dataTable");
-            const wb = XLSX.utils.table_to_book(table, { sheet: "Sheet1" });
+
+            // Manually adjust the width of the columns before export
+            const ws = XLSX.utils.table_to_sheet(table, { sheet: "Sheet1" });
+
+            // Set the column widths to make the table more compact (50% width)
+            const colWidth = [];
+            for (let i = 0; i < table.rows[0].cells.length; i++) {
+                colWidth.push({ wpx: 80 });  // Adjust column width (e.g., 80px)
+            }
+
+            ws['!cols'] = colWidth;
+
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
+
+            // Export to Excel file
             XLSX.writeFile(wb, "filtered_data.xlsx");
         }
     </script>
