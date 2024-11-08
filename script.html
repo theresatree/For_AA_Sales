@@ -101,15 +101,15 @@
 
                     // Apply the appropriate styles (colors only, no text)
                     if (value === 'A') {
-                        cellColor = 'green';
+                        cellColor = 'green';  // Green for "A"
                     } else if (value === 'C') {
-                        cellColor = 'red';
+                        cellColor = 'red';  // Red for "C"
                     } else if (value === '') {
                         // If value is empty (" "), it will have no fill (empty cell)
-                        cellColor = 'empty';
-                    } else {
-                        // If the unit does not exist for the level, color it black
-                        cellColor = levelData[level][unit] === undefined ? 'black' : 'empty';
+                        cellColor = 'empty';  // No fill for " "
+                    } else if (levelData[level][unit] === undefined) {
+                        // If unit number is missing for this level, color it black
+                        cellColor = 'black';
                     }
 
                     td.classList.add(cellColor);
