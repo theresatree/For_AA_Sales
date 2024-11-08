@@ -9,11 +9,15 @@
         textarea { width: 100%; height: 200px; }
         button { margin-top: 10px; }
         table { width: 50%; border-collapse: collapse; margin-top: 20px; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-        .green { background-color: green; }
-        .red { background-color: red; }
-        .black { background-color: black; }
-        .empty { background-color: white; }
+        th, td { 
+            border: 1px solid #ddd; 
+            padding: 8px; 
+            text-align: left; 
+            background-color: white; /* Default background is white */
+        }
+        .green { background-color: #00ff00; }
+        .red { background-color: #ff0000; }
+        .black { background-color: #000000; }
     </style>
 </head>
 <body>
@@ -25,10 +29,8 @@
     <h3>Filtered Data:</h3>
     <table id="dataTable">
         <thead>
-            <!-- Dynamic header will be added after processing -->
         </thead>
         <tbody>
-            <!-- Filtered data will appear here -->
         </tbody>
     </table>
     
@@ -39,29 +41,38 @@
             const inputData = document.getElementById('inputData').value.trim();
             const rows = inputData.split('\n');
             const levelData = {};
-            const unitNumbers = new Set(); // To collect all unique unit numbers
+            const unitNumbers = new Set();
 
             // Process each row
             rows.forEach(row => {
-                const columns = row.split(/\s+/);
+                const columns = row.trim().split(/[\t\s]+/);
+                
                 if (columns.length >= 3) {
-                    const code = columns[0].toUpperCase();
+                    let code = columns[0].trim();
                     const unit = columns[columns.length - 1].trim();
 
-                    // Extract row and column from the unit (e.g., #02-50 becomes 02 and 50)
                     const unitParts = unit.replace('#', '').split('-');
                     if (unitParts.length === 2) {
-                        const level = unitParts[0];  // Extract the row (level)
-                        const unitNumber = unitParts[1];  // Extract the unit number
+                        const level = unitParts[0];
+                        const unitNumber = unitParts[1];
 
-                        // Only include rows where the code is "A" or "C", or " " (space)
-                        if (code === 'A' || code === 'C' || code === ' ') {
-                            if (!levelData[level]) {
-                                levelData[level] = {};
-                            }
-                            levelData[level][unitNumber] = code === ' ' ? '' : code;
-                            unitNumbers.add(unitNumber); // Add unit number to the set
+                        if (!levelData[level]) {
+                            levelData[level] = {};
                         }
+
+                        // Handle empty or space code
+                        if (code === '') {
+                            levelData[level][unitNumber] = ' ';  // Space for empty code
+                        } else {
+                            code = code.toUpperCase();
+                            if (code === 'A' || code === 'C') {
+                                levelData[level][unitNumber] = code;
+                            } else {
+                                levelData[level][unitNumber] = ' ';  // Space for any other code
+                            }
+                        }
+                        
+                        unitNumbers.add(unitNumber);
                     }
                 }
             });
@@ -69,9 +80,9 @@
             // Convert unitNumbers to a sorted array
             const unitArray = Array.from(unitNumbers).sort((a, b) => parseInt(a) - parseInt(b));
 
-            // Create table headers dynamically based on the unique unit numbers
+            // Create table headers
             const tableHeader = document.getElementById('dataTable').getElementsByTagName('thead')[0];
-            tableHeader.innerHTML = ''; // Clear any previous headers
+            tableHeader.innerHTML = '';
             const headerRow = document.createElement('tr');
             headerRow.appendChild(document.createElement('th')).textContent = 'Level';
             unitArray.forEach(unit => {
@@ -83,12 +94,20 @@
 
             // Populate the table with the filtered data
             const tableBody = document.getElementById('dataTable').getElementsByTagName('tbody')[0];
-            tableBody.innerHTML = ''; // Clear previous results
+            tableBody.innerHTML = '';
 
-            // Sort levels numerically
-            const levels = Object.keys(levelData).sort((a, b) => parseInt(a) - parseInt(b));
+            // Sort levels with special handling for Level 1
+            const levels = Object.keys(levelData);
+            const sortedLevels = levels
+                .filter(level => level !== '01')
+                .sort((a, b) => parseInt(a) - parseInt(b));
 
-            levels.forEach(level => {
+            // Add level 1 at the end if it exists
+            if (levels.includes('01')) {
+                sortedLevels.push('01');
+            }
+
+            sortedLevels.forEach(level => {
                 const tr = document.createElement('tr');
                 const tdLevel = document.createElement('td');
                 tdLevel.textContent = level;
@@ -96,23 +115,18 @@
 
                 unitArray.forEach(unit => {
                     const td = document.createElement('td');
-                    const value = levelData[level][unit] || '';
-                    let cellColor = '';
-
-                    // Apply the appropriate styles (colors only, no text)
+                    const value = levelData[level][unit];
+                    
+                    // Only add class if it's not a space
                     if (value === 'A') {
-                        cellColor = 'green';  // Green for "A"
+                        td.classList.add('green');
                     } else if (value === 'C') {
-                        cellColor = 'red';  // Red for "C"
-                    } else if (value === '') {
-                        // If value is empty (" "), it will have no fill (empty cell)
-                        cellColor = 'empty';  // No fill for " "
-                    } else if (levelData[level][unit] === undefined) {
-                        // If unit number is missing for this level, color it black
-                        cellColor = 'black';
+                        td.classList.add('red');
+                    } else if (value === undefined) {
+                        td.classList.add('black');
                     }
+                    // No class needed for space - will remain white
 
-                    td.classList.add(cellColor);
                     tr.appendChild(td);
                 });
 
@@ -122,22 +136,17 @@
 
         function generateExcel() {
             const table = document.getElementById("dataTable");
-
-            // Manually adjust the width of the columns before export
             const ws = XLSX.utils.table_to_sheet(table, { sheet: "Sheet1" });
 
-            // Set the column widths to make the table more compact (e.g., 80px)
             const colWidth = [];
             for (let i = 0; i < table.rows[0].cells.length; i++) {
-                colWidth.push({ wpx: 80 });  // Adjust column width (e.g., 80px)
+                colWidth.push({ wpx: 80 });
             }
 
             ws['!cols'] = colWidth;
 
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
-
-            // Export to Excel file
             XLSX.writeFile(wb, "filtered_data.xlsx");
         }
     </script>
