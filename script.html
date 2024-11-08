@@ -69,7 +69,7 @@
     </style>
 </head>
 <body>
-    <h1>Filter Data and Generate Excel</h1>
+    <h1>Filter Data and Generate Excel for AA Sales</h1>
     <p>Paste your data below (e.g., "A TOH GUAN ROAD #02-50"):</p>
     <textarea id="inputData" placeholder="Paste data here..."></textarea>
     <div class="controls">
@@ -277,6 +277,9 @@ function copyTable(includeLevel) {
 
     tableHtml += "</table>";
 
+    // Debugging step: Log table HTML
+    console.log("Generated Table HTML:\n", tableHtml);
+
     // Create a temporary hidden iframe to simulate the copy process
     const iframe = document.createElement("iframe");
     iframe.style.position = "absolute";
@@ -311,7 +314,7 @@ function copyTable(includeLevel) {
         ? "Colors with level successfully copied"
         : "Colors successfully copied";
     message.style.position = "fixed";
-    message.style.top = "0px";
+    message.style.top = "20px";
     message.style.left = "50%";
     message.style.transform = "translateX(-50%)";
     message.style.padding = "10px 20px";
