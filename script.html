@@ -12,14 +12,14 @@
             flex-direction: column;
             align-items: center;
         }
-        
+
         textarea { 
             width: 30%; /* Reduced from 100% to 50% */
             height: 200px;
             margin: 0 auto;
             display: block;
         }
-        
+
         /* Style for both buttons */
         button {
             margin: 10px;
@@ -31,31 +31,31 @@
             border: none;
             border-radius: 4px;
         }
-        
+
         button:hover {
             background-color: #45a049;
         }
-        
+
         table { 
             width: 50%; 
             border-collapse: collapse; 
             margin: 20px auto; /* Added auto margins for centering */
             user-select: all;
         }
-        
+
         th, td { 
             border: 1px solid #ddd; 
             padding: 8px; 
             text-align: center;
             vertical-align: middle;
         }
-        
+
         /* Center all other elements */
         h1, h3, p, div {
             text-align: center;
             width: 100%;
         }
-        
+
         .controls {
             display: flex;
             justify-content: center;
@@ -79,7 +79,7 @@
     <div class="controls">
         <button onclick="processData()">Process Data</button>
     </div>
-    
+
     <h3>Filtered Data:</h3>
     <div>You can choose to copy or download the table.</div>
     <table id="dataTable">
@@ -88,11 +88,11 @@
         <tbody>
         </tbody>
     </table>
-    
+
     <div class="button-group">
         <button onclick="generateExcel()">Download as Excel</button>
-        <button onclick="copyTableWithLevel()">Copy Table with Level</button>
-        <button onclick="copyTableWithoutLevel()">Copy Table without Level</button>
+        <button onclick="copyTable(true)">Copy Table with Level</button>
+        <button onclick="copyTable(false)">Copy Table without Level</button>
     </div>
 
     <script>
@@ -105,7 +105,7 @@
             // Process each row
             rows.forEach(row => {
                 const columns = row.trim().split(/[\t\s]+/);
-                
+
                 if (columns.length >= 3) {
                     let code = columns[0].trim();
                     const unit = columns[columns.length - 1].trim();
@@ -130,7 +130,7 @@
                                 levelData[level][unitNumber] = ' ';
                             }
                         }
-                        
+
                         unitNumbers.add(unitNumber);
                     }
                 }
@@ -147,7 +147,7 @@
             firstTh.textContent = 'Level';
             firstTh.style.textAlign = 'center';
             headerRow.appendChild(firstTh);
-            
+
             unitArray.forEach(unit => {
                 const th = document.createElement('th');
                 th.textContent = unit;
@@ -182,7 +182,7 @@
                     const td = document.createElement('td');
                     const value = levelData[level][unit];
                     td.style.textAlign = 'center';
-                    
+
                     // Apply background colors directly as styles
                     if (value === 'A') {
                         td.style.backgroundColor = '#00FF00'; // Green
@@ -217,41 +217,29 @@
             XLSX.writeFile(wb, "filtered_data.xlsx");
         }
 
-        function copyTableWithLevel() {
+        function copyTable(includeLevel) {
             const table = document.getElementById("dataTable");
-            const tableContent = table.outerHTML; // Get the entire table HTML
+            let tableContent = table.outerHTML;
 
-            // Create a temporary element to copy the table HTML
-            const textarea = document.createElement("textarea");
-            textarea.value = tableContent;
-            document.body.appendChild(textarea);
-            textarea.select();
-            document.execCommand('copy');
-            document.body.removeChild(textarea);
+            if (!includeLevel) {
+                // If we don't want the "Level" column, we will modify the table content
+                const rows = table.getElementsByTagName("tr");
+                let modifiedContent = "<table>";
 
-            alert("Table content copied with the Level column.");
-        }
-
-        function copyTableWithoutLevel() {
-            const table = document.getElementById("dataTable");
-            const rows = table.getElementsByTagName("tr");
-            let tableContent = "<table>";
-
-            // Loop through each row and exclude the first column (level column)
-            for (let i = 0; i < rows.length; i++) {
-                const cells = rows[i].getElementsByTagName("td");
-                tableContent += "<tr>";
-
-                for (let j = 1; j < cells.length; j++) { // Start from index 1 to skip level column
-                    tableContent += `<td>${cells[j].innerText}</td>`;
-                }
-
-                tableContent += "</tr>";
+                Array.from(rows).forEach((row) => {
+                    const cells = row.getElementsByTagName("td");
+                    let rowContent = "<tr>";
+                    for (let i = 1; i < cells.length; i++) { // Skip the first column (Level)
+                        rowContent += `<td>${cells[i].innerText}</td>`;
+                    }
+                    rowContent += "</tr>";
+                    modifiedContent += rowContent;
+                });
+                modifiedContent += "</table>";
+                tableContent = modifiedContent;
             }
 
-            tableContent += "</table>";
-
-            // Create a temporary element to copy the modified table HTML
+            // Copy the table content to the clipboard
             const textarea = document.createElement("textarea");
             textarea.value = tableContent;
             document.body.appendChild(textarea);
@@ -259,7 +247,7 @@
             document.execCommand('copy');
             document.body.removeChild(textarea);
 
-            alert("Table content copied without the Level column.");
+            alert("Table content copied" + (includeLevel ? " with the Level column." : " without the Level column."));
         }
     </script>
 </body>
