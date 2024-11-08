@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Data Filter and Excel Generator</title>
+    <title>Data Filter and Excel Generator for AA Sales</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
     <style>
         body {
@@ -198,41 +198,82 @@
         }
         
 function copyTable(includeLevel) {
-    const table = document.getElementById("dataTable");
+    const inputData = document.getElementById('inputData').value.trim();
+    const rows = inputData.split('\n');
+    const levelData = {};
+    const unitNumbers = new Set();
+
+    // Process input data (same as processData function)
+    rows.forEach(row => {
+        const columns = row.trim().split(/[\t\s]+/);
+        if (columns.length >= 3) {
+            let code = columns[0].trim();
+            const unit = columns[columns.length - 1].trim();
+
+            const unitParts = unit.replace('#', '').split('-');
+            if (unitParts.length === 2) {
+                const level = unitParts[0];
+                const unitNumber = unitParts[1];
+
+                if (!levelData[level]) {
+                    levelData[level] = {};
+                }
+
+                if (code === '') {
+                    levelData[level][unitNumber] = ' ';
+                } else {
+                    code = code.toUpperCase();
+                    if (code === 'A' || code === 'C') {
+                        levelData[level][unitNumber] = code;
+                    } else {
+                        levelData[level][unitNumber] = ' ';
+                    }
+                }
+
+                unitNumbers.add(unitNumber);
+            }
+        }
+    });
+
+    const unitArray = Array.from(unitNumbers).sort((a, b) => parseInt(a) - parseInt(b));
+
     let tableHtml = "<table>";
 
-    // Get the header row (unit numbers)
-    const headerRow = table.getElementsByTagName("thead")[0].getElementsByTagName("tr")[0];
+    // Header Row
     tableHtml += "<tr>";
-    Array.from(headerRow.children).forEach((cell, index) => {
-        // Only include unit numbers (skip level column if not including level)
-        if (includeLevel || index > 0) {
-            tableHtml += `<th>${cell.textContent}</th>`;
-        }
+    tableHtml += "<th>Level</th>";
+    unitArray.forEach(unit => {
+        tableHtml += `<th>${unit}</th>`;
     });
     tableHtml += "</tr>";
 
-    // Loop through all the table rows (start from row index 1 to avoid the header)
-    const rows = table.getElementsByTagName("tbody")[0].getElementsByTagName("tr");
-    for (let rowIndex = 0; rowIndex < rows.length; rowIndex++) {
-        const row = rows[rowIndex];
-        tableHtml += "<tr>";
+    // Levels Row
+    const levels = Object.keys(levelData);
+    const sortedLevels = levels.filter(level => level !== '01').sort((a, b) => parseInt(a) - parseInt(b));
 
-        const cells = row.getElementsByTagName("td");
-
-        // Loop through all the cells in the row and capture their content
-        for (let cellIndex = 0; cellIndex < cells.length; cellIndex++) {
-            const cell = cells[cellIndex];
-
-            // Skip the first cell (level column) if not including level
-            if (includeLevel || cellIndex > 0) {
-                const cellColor = rgbToHex(cell.style.backgroundColor);
-                let style = cellColor ? `background-color:#${cellColor};` : '';
-                tableHtml += `<td style="${style}">${cell.innerHTML}</td>`;
-            }
-        }
-        tableHtml += "</tr>";
+    if (levels.includes('01')) {
+        sortedLevels.push('01');
     }
+
+    sortedLevels.forEach(level => {
+        tableHtml += "<tr>";
+        tableHtml += `<td>${level}</td>`;
+        unitArray.forEach(unit => {
+            const value = levelData[level][unit];
+            let cellColor = '#FFFFFF'; // Default to white
+
+            if (value === 'A') {
+                cellColor = '#00FF00'; // Green
+            } else if (value === 'C') {
+                cellColor = '#FF0000'; // Red
+            } else if (value === undefined) {
+                cellColor = '#000000'; // Black
+            }
+
+            tableHtml += `<td style="background-color:${cellColor};"></td>`; // Empty cell with color
+        });
+        tableHtml += "</tr>";
+    });
 
     tableHtml += "</table>";
 
@@ -286,6 +327,7 @@ function copyTable(includeLevel) {
         message.remove();
     }, 2000);
 }
+
 
         // Function to convert RGB to Hex color code
 function rgbToHex(rgb) {
