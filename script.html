@@ -277,9 +277,6 @@ function copyTable(includeLevel) {
 
     tableHtml += "</table>";
 
-    // Debugging step: Log table HTML
-    console.log("Generated Table HTML:\n", tableHtml);
-
     // Create a temporary hidden iframe to simulate the copy process
     const iframe = document.createElement("iframe");
     iframe.style.position = "absolute";
@@ -295,41 +292,44 @@ function copyTable(includeLevel) {
     iframeDoc.write("</body></html>");
     iframeDoc.close();
 
-    // Ensure the content is loaded and select it
-    const range = iframeDoc.createRange();
-    range.selectNodeContents(iframeDoc.body);
-    const selection = iframeDoc.getSelection();
-    selection.removeAllRanges();
-    selection.addRange(range);
+    // Ensure the content is loaded, select the entire content, and then copy
+    iframe.onload = function() {
+        const range = iframeDoc.createRange();
+        range.selectNodeContents(iframeDoc.body);
+        const selection = iframeDoc.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
 
-    // Copy the content to clipboard
-    iframeDoc.execCommand("copy");
+        // Copy the content to clipboard
+        iframeDoc.execCommand("copy");
 
-    // Clean up the iframe after the operation
-    document.body.removeChild(iframe);
+        // Clean up the iframe after the operation
+        document.body.removeChild(iframe);
 
-    // Create and show a temporary message
-    const message = document.createElement("div");
-    message.textContent = includeLevel
-        ? "Colors with level successfully copied"
-        : "Colors successfully copied";
-    message.style.position = "fixed";
-    message.style.top = "20px";
-    message.style.left = "50%";
-    message.style.transform = "translateX(-50%)";
-    message.style.padding = "10px 20px";
-    message.style.backgroundColor = "#4CAF50";
-    message.style.color = "#fff";
-    message.style.fontSize = "16px";
-    message.style.borderRadius = "5px";
-    message.style.zIndex = "9999";
-    document.body.appendChild(message);
+        // Create and show a temporary message
+        const message = document.createElement("div");
+        message.textContent = includeLevel
+            ? "Colors with level successfully copied"
+            : "Colors successfully copied";
+        message.style.position = "fixed";
+        message.style.top = "20px";
+        message.style.left = "50%";
+        message.style.transform = "translateX(-50%)";
+        message.style.padding = "10px 20px";
+        message.style.backgroundColor = "#4CAF50";
+        message.style.color = "#fff";
+        message.style.fontSize = "16px";
+        message.style.borderRadius = "5px";
+        message.style.zIndex = "9999";
+        document.body.appendChild(message);
 
-    // Remove the message after 2 seconds
-    setTimeout(() => {
-        message.remove();
-    }, 2000);
+        // Remove the message after 2 seconds
+        setTimeout(() => {
+            message.remove();
+        }, 2000);
+    };
 }
+
 
 
         // Function to convert RGB to Hex color code
