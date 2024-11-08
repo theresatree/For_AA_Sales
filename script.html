@@ -221,10 +221,10 @@
                 let rowContent = "";
 
                 for (let i = (includeLevel ? 0 : 1); i < cells.length; i++) {
-                    rowContent += cells[i].innerText + "\t";
+                    rowContent += cells[i].innerText + "\t"; // add a tab between cells
                 }
 
-                tableContent += rowContent.trim() + "\n";
+                tableContent += rowContent.trim() + "\n"; // add newline after each row
             });
 
             const textarea = document.createElement("textarea");
