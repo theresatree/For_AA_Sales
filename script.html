@@ -71,7 +71,6 @@
 <body>
     <h1>Filter Data and Generate Excel</h1>
     <p>Paste your data below (e.g., "A TOH GUAN ROAD #02-50"):</p>
-    <p>version2</p>
     <textarea id="inputData" placeholder="Paste data here..."></textarea>
     <div class="controls">
         <button onclick="processData()">Process Data</button>
@@ -204,6 +203,8 @@
     
             tableHtml += "<tr>";
             const cells = row.getElementsByTagName("td");
+    
+            // Loop through all the cells in the row and capture their content
             Array.from(cells).forEach((cell, cellIndex) => {
                 // Skip the first cell (level column) if not including level
                 if (includeLevel || cellIndex > 0) {
@@ -249,7 +250,7 @@
             ? "Colors with level successfully copied"
             : "Colors successfully copied";
         message.style.position = "fixed";
-        message.style.top = "0px";
+        message.style.top = "20px";
         message.style.left = "50%";
         message.style.transform = "translateX(-50%)";
         message.style.padding = "10px 20px";
@@ -277,6 +278,7 @@
         }
         return 'FFFFFF'; // default to white if parsing fails
     }
+
 
     </script>
 </body>
