@@ -23,7 +23,7 @@
         <thead>
             <tr>
                 <th>Level</th>
-                <th>Unit Numbers</th>
+                <!-- Dynamic column headers will appear here -->
             </tr>
         </thead>
         <tbody>
@@ -38,6 +38,7 @@
             const inputData = document.getElementById('inputData').value.trim();
             const rows = inputData.split('\n');
             const levelData = {};
+            const unitNumbers = new Set(); // To collect all unique unit numbers
 
             // Process each row
             rows.forEach(row => {
@@ -55,33 +56,48 @@
                         // Only include rows where the code is "A" or "C"
                         if (code === 'A' || code === 'C') {
                             if (!levelData[level]) {
-                                levelData[level] = [];
+                                levelData[level] = {};
                             }
-                            // Add unit number to the corresponding level
-                            if (!levelData[level].includes(unitNumber)) {
-                                levelData[level].push(unitNumber);
-                            }
+                            // Mark the unit number for the specific level
+                            levelData[level][unitNumber] = code;
+                            unitNumbers.add(unitNumber); // Add unit number to the set
                         }
                     }
                 }
             });
 
-            // Convert the levelData object to an array and display it in the table
+            // Convert unitNumbers to a sorted array
+            const unitArray = Array.from(unitNumbers).sort((a, b) => parseInt(a) - parseInt(b));
+
+            // Create table headers dynamically based on the unique unit numbers
+            const tableHeader = document.getElementById('dataTable').getElementsByTagName('thead')[0];
+            const headerRow = document.createElement('tr');
+            headerRow.appendChild(document.createElement('th')).textContent = 'Level';
+            unitArray.forEach(unit => {
+                const th = document.createElement('th');
+                th.textContent = unit;
+                headerRow.appendChild(th);
+            });
+            tableHeader.appendChild(headerRow);
+
+            // Populate the table with the filtered data
             const tableBody = document.getElementById('dataTable').getElementsByTagName('tbody')[0];
             tableBody.innerHTML = ''; // Clear previous results
 
-            // Sort levels in numerical order
+            // Sort levels numerically
             const levels = Object.keys(levelData).sort((a, b) => parseInt(a) - parseInt(b));
 
             levels.forEach(level => {
                 const tr = document.createElement('tr');
                 const tdLevel = document.createElement('td');
-                tdLevel.textContent = level; // Level number
+                tdLevel.textContent = level;
                 tr.appendChild(tdLevel);
 
-                const tdUnits = document.createElement('td');
-                tdUnits.textContent = levelData[level].join(' | '); // Unit numbers separated by " | "
-                tr.appendChild(tdUnits);
+                unitArray.forEach(unit => {
+                    const td = document.createElement('td');
+                    td.textContent = levelData[level][unit] || ''; // If no data, leave empty
+                    tr.appendChild(td);
+                });
 
                 tableBody.appendChild(tr);
             });
