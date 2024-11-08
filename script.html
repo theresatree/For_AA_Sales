@@ -40,6 +40,7 @@
             const rows = inputData.split('\n');
             const levelData = {};
             const unitNumbers = new Set(); // To collect all unique unit numbers
+            let level1Data = {}; // For saving Level 1 data separately
 
             // Process each row
             rows.forEach(row => {
@@ -59,8 +60,13 @@
                             if (!levelData[level]) {
                                 levelData[level] = {};
                             }
-                            // Mark the unit number for the specific level
-                            levelData[level][unitNumber] = (code === ' ') ? '' : code;
+                            // Save Level 1 data separately
+                            if (level === '01') {
+                                level1Data[unitNumber] = code === ' ' ? '' : code;
+                            } else {
+                                levelData[level][unitNumber] = (code === ' ') ? '' : code;
+                            }
+
                             unitNumbers.add(unitNumber); // Add unit number to the set
                         }
                     }
@@ -102,23 +108,53 @@
                 unitArray.forEach(unit => {
                     const td = document.createElement('td');
                     const value = levelData[level][unit] || '';
+                    let cellColor = '';
 
                     // Apply the appropriate styles (colors only, no text)
                     if (value === 'A') {
-                        td.classList.add('green');
+                        cellColor = 'green';
                     } else if (value === 'C') {
-                        td.classList.add('red');
+                        cellColor = 'red';
                     } else if (value === '') {
-                        td.classList.add('empty');
+                        cellColor = 'empty';
                     } else {
-                        td.classList.add('black');
+                        cellColor = 'black';
                     }
 
+                    td.classList.add(cellColor);
                     tr.appendChild(td);
                 });
 
                 tableBody.appendChild(tr);
             });
+
+            // Add Level 1 data at the last row
+            const level1Row = document.createElement('tr');
+            const tdLevel1 = document.createElement('td');
+            tdLevel1.textContent = '1'; // Level 1
+            level1Row.appendChild(tdLevel1);
+
+            unitArray.forEach(unit => {
+                const td = document.createElement('td');
+                const value = level1Data[unit] || '';
+                let cellColor = '';
+
+                // Apply the appropriate styles for Level 1 (colors only, no text)
+                if (value === 'A') {
+                    cellColor = 'green';
+                } else if (value === 'C') {
+                    cellColor = 'red';
+                } else if (value === '') {
+                    cellColor = 'empty';
+                } else {
+                    cellColor = 'black';
+                }
+
+                td.classList.add(cellColor);
+                level1Row.appendChild(td);
+            });
+
+            tableBody.appendChild(level1Row);
         }
 
         function generateExcel() {
