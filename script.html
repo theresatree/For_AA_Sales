@@ -75,6 +75,7 @@
     <textarea id="inputData" placeholder="Paste data here..."></textarea>
     <div class="controls">
         <button onclick="processData()">Process Data</button>
+        <button onclick="clearData()">Clear Data</button>
     </div>
 
     <h3>Filtered Data:</h3>
@@ -180,6 +181,23 @@
                 tableBody.appendChild(tr);
             });
         }
+        function clearData() {
+            // Clear the textarea
+            document.getElementById('inputData').value = '';
+
+            // Clear the table content
+            const tableBody = document.getElementById('dataTable').getElementsByTagName('tbody')[0];
+            const tableHeader = document.getElementById('dataTable').getElementsByTagName('thead')[0];
+            tableHeader.innerHTML = '';
+            tableBody.innerHTML = '';
+
+            // Reset any other UI elements if needed (e.g., buttons, messages)
+            const message = document.querySelector(".temporary-message");
+            if (message) {
+                message.remove();
+            }
+        }
+        
 function copyTable(includeLevel) {
     const table = document.getElementById("dataTable");
     let tableHtml = "<table>";
