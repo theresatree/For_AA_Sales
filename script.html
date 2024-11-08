@@ -40,7 +40,6 @@
             const rows = inputData.split('\n');
             const levelData = {};
             const unitNumbers = new Set(); // To collect all unique unit numbers
-            let level1Data = {}; // For saving Level 1 data separately
 
             // Process each row
             rows.forEach(row => {
@@ -60,25 +59,15 @@
                             if (!levelData[level]) {
                                 levelData[level] = {};
                             }
-                            // Save Level 1 data separately
-                            if (level === '01') {
-                                level1Data[unitNumber] = code === ' ' ? '' : code;
-                            } else {
-                                levelData[level][unitNumber] = (code === ' ') ? '' : code;
-                            }
-
+                            levelData[level][unitNumber] = code === ' ' ? '' : code;
                             unitNumbers.add(unitNumber); // Add unit number to the set
                         }
                     }
                 }
             });
 
-            // Convert unitNumbers to a sorted array, but ensure #01 is always the last one
-            let unitArray = Array.from(unitNumbers).sort((a, b) => parseInt(a) - parseInt(b));
-            if (unitArray.includes('01')) {
-                unitArray = unitArray.filter(unit => unit !== '01');  // Remove #01 temporarily
-                unitArray.push('01');  // Add #01 at the end
-            }
+            // Convert unitNumbers to a sorted array
+            const unitArray = Array.from(unitNumbers).sort((a, b) => parseInt(a) - parseInt(b));
 
             // Create table headers dynamically based on the unique unit numbers
             const tableHeader = document.getElementById('dataTable').getElementsByTagName('thead')[0];
@@ -105,8 +94,6 @@
                 tdLevel.textContent = level;
                 tr.appendChild(tdLevel);
 
-                let levelHasUnitNumber = false; // To check if any unit exists for the current level
-
                 unitArray.forEach(unit => {
                     const td = document.createElement('td');
                     const value = levelData[level][unit] || '';
@@ -123,52 +110,17 @@
                         cellColor = 'black';
                     }
 
-                    // If level has no unit number, color the cell black
-                    if (value === '') {
+                    // If the unit does not exist for the level, color it black
+                    if (!levelData[level][unit]) {
                         cellColor = 'black';
-                    } else {
-                        levelHasUnitNumber = true; // Mark that level has a unit number
                     }
 
                     td.classList.add(cellColor);
                     tr.appendChild(td);
                 });
 
-                // Only add the row if the level has at least one unit number
-                if (levelHasUnitNumber) {
-                    tableBody.appendChild(tr);
-                }
+                tableBody.appendChild(tr);
             });
-
-            // Add Level 1 data at the last row if there is any data for Level 1
-            if (Object.keys(level1Data).length > 0) {
-                const level1Row = document.createElement('tr');
-                const tdLevel1 = document.createElement('td');
-                tdLevel1.textContent = '1'; // Level 1
-                level1Row.appendChild(tdLevel1);
-
-                unitArray.forEach(unit => {
-                    const td = document.createElement('td');
-                    const value = level1Data[unit] || '';
-                    let cellColor = '';
-
-                    // Apply the appropriate styles for Level 1 (colors only, no text)
-                    if (value === 'A') {
-                        cellColor = 'green';
-                    } else if (value === 'C') {
-                        cellColor = 'red';
-                    } else if (value === '') {
-                        cellColor = 'empty';
-                    } else {
-                        cellColor = 'black';
-                    }
-
-                    td.classList.add(cellColor);
-                    level1Row.appendChild(td);
-                });
-
-                tableBody.appendChild(level1Row);
-            }
         }
 
         function generateExcel() {
@@ -177,7 +129,7 @@
             // Manually adjust the width of the columns before export
             const ws = XLSX.utils.table_to_sheet(table, { sheet: "Sheet1" });
 
-            // Set the column widths to make the table more compact (50% width)
+            // Set the column widths to make the table more compact (e.g., 50px width)
             const colWidth = [];
             for (let i = 0; i < table.rows[0].cells.length; i++) {
                 colWidth.push({ wpx: 80 });  // Adjust column width (e.g., 80px)
