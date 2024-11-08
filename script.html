@@ -10,9 +10,9 @@
         button { margin-top: 10px; }
         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
         th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-        .green { background-color: green; color: white; }
-        .red { background-color: red; color: white; }
-        .black { background-color: black; color: white; }
+        .green { background-color: green; }
+        .red { background-color: red; }
+        .black { background-color: black; }
         .empty { background-color: white; }
     </style>
 </head>
@@ -102,9 +102,8 @@
                 unitArray.forEach(unit => {
                     const td = document.createElement('td');
                     const value = levelData[level][unit] || '';
-                    td.textContent = value;
 
-                    // Apply the appropriate styles
+                    // Apply the appropriate styles (colors only, no text)
                     if (value === 'A') {
                         td.classList.add('green');
                     } else if (value === 'C') {
