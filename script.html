@@ -70,6 +70,7 @@
 </head>
 <body>
     <h1>Filter Data and Generate Excel for AA Sales</h1>
+    <p>help me</p>
     <p>Paste your data below (e.g., "A TOH GUAN ROAD #02-50"):</p>
     <textarea id="inputData" placeholder="Paste data here..."></textarea>
     <div class="controls">
@@ -295,8 +296,9 @@ function copyTable(includeLevel) {
     iframeDoc.close();
 
     // Ensure the content is loaded and select it
+    const table = iframeDoc.querySelector("table");  // Select the entire table
     const range = iframeDoc.createRange();
-    range.selectNodeContents(iframeDoc.body);
+    range.selectNodeContents(table);  // Select the entire table
     const selection = iframeDoc.getSelection();
     selection.removeAllRanges();
     selection.addRange(range);
@@ -332,6 +334,7 @@ function copyTable(includeLevel) {
         message.remove();
     }, 2000);
 }
+
 
 
         // Function to convert RGB to Hex color code
