@@ -6,19 +6,18 @@
     <title>Data Filter and Excel Generator for AA Sales</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
     <style>
+        /* Previous styles remain the same */
         body {
             display: flex;
             flex-direction: column;
             align-items: center;
         }
-
         textarea {
             width: 30%;
             height: 200px;
             margin: 0 auto;
             display: block;
         }
-
         button {
             margin: 10px;
             padding: 12px 24px;
@@ -29,37 +28,33 @@
             border: none;
             border-radius: 4px;
         }
-
         button:hover {
             background-color: #45a049;
         }
-
         table { 
             width: 50%; 
             border-collapse: collapse; 
             margin: 20px auto;
             user-select: all;
         }
-
         th, td { 
             border: 1px solid #ddd; 
             padding: 8px; 
             text-align: center;
             vertical-align: middle;
+            min-width: 30px; /* Added minimum width */
+            height: 30px; /* Added minimum height */
         }
-
         h1, h3, p, div {
             text-align: center;
             width: 100%;
         }
-
         .controls {
             display: flex;
             justify-content: center;
             gap: 10px;
             width: 100%;
         }
-
         .button-group {
             display: flex;
             justify-content: center;
@@ -70,7 +65,6 @@
 </head>
 <body>
     <h1>Filter Data and Generate Excel for AA Sales</h1>
-    <p>help me</p>
     <p>Paste your data below (e.g., "A TOH GUAN ROAD #02-50"):</p>
     <textarea id="inputData" placeholder="Paste data here..."></textarea>
     <div class="controls">
@@ -130,227 +124,170 @@
 
             const unitArray = Array.from(unitNumbers).sort((a, b) => parseInt(a) - parseInt(b));
 
-            const tableHeader = document.getElementById('dataTable').getElementsByTagName('thead')[0];
-            tableHeader.innerHTML = '';
-            const headerRow = document.createElement('tr');
-            const firstTh = document.createElement('th');
-            firstTh.textContent = 'Level';
-            headerRow.appendChild(firstTh);
+            // Store the processed data globally for use in copy function
+            window.processedData = {
+                levelData: levelData,
+                unitArray: unitArray
+            };
+
+            displayTable(levelData, unitArray);
+        }
+
+        function displayTable(levelData, unitArray) {
+            const table = document.getElementById('dataTable');
+            const thead = table.getElementsByTagName('thead')[0];
+            const tbody = table.getElementsByTagName('tbody')[0];
+            
+            thead.innerHTML = '';
+            tbody.innerHTML = '';
+
+            // Create header row
+            const headerRow = thead.insertRow();
+            const levelHeader = headerRow.insertCell();
+            levelHeader.textContent = 'Level';
+            levelHeader.style.fontWeight = 'bold';
 
             unitArray.forEach(unit => {
-                const th = document.createElement('th');
+                const th = headerRow.insertCell();
                 th.textContent = unit;
-                headerRow.appendChild(th);
+                th.style.fontWeight = 'bold';
             });
-            tableHeader.appendChild(headerRow);
 
-            const tableBody = document.getElementById('dataTable').getElementsByTagName('tbody')[0];
-            tableBody.innerHTML = '';
-
+            // Create body rows
             const levels = Object.keys(levelData);
-            const sortedLevels = levels.filter(level => level !== '01').sort((a, b) => parseInt(a) - parseInt(b));
-
+            const sortedLevels = levels.filter(level => level !== '01')
+                .sort((a, b) => parseInt(a) - parseInt(b));
             if (levels.includes('01')) {
                 sortedLevels.push('01');
             }
 
             sortedLevels.forEach(level => {
-                const tr = document.createElement('tr');
-                const tdLevel = document.createElement('td');
-                tdLevel.textContent = level;
-                tr.appendChild(tdLevel);
+                const row = tbody.insertRow();
+                const levelCell = row.insertCell();
+                levelCell.textContent = level;
 
                 unitArray.forEach(unit => {
-                    const td = document.createElement('td');
+                    const cell = row.insertCell();
                     const value = levelData[level][unit];
-
-                    if (value === 'A') {
-                        td.style.backgroundColor = '#00FF00'; // Green
-                    } else if (value === 'C') {
-                        td.style.backgroundColor = '#FF0000'; // Red
-                    } else if (value === undefined) {
-                        td.style.backgroundColor = '#000000'; // Black
-                    } else {
-                        td.style.backgroundColor = '#FFFFFF'; // White
-                    }
-
-                    td.textContent = ''; // Don't display text, only color
-                    tr.appendChild(td);
+                    cell.style.backgroundColor = getColorForValue(value);
+                    // Ensure cell has content even if empty
+                    cell.innerHTML = '&nbsp;';
                 });
-
-                tableBody.appendChild(tr);
             });
         }
+
+        function getColorForValue(value) {
+            if (value === 'A') return '#00FF00';
+            if (value === 'C') return '#FF0000';
+            if (value === undefined) return '#000000';
+            return '#FFFFFF';
+        }
+
         function clearData() {
-            // Clear the textarea
             document.getElementById('inputData').value = '';
-
-            // Clear the table content
-            const tableBody = document.getElementById('dataTable').getElementsByTagName('tbody')[0];
-            const tableHeader = document.getElementById('dataTable').getElementsByTagName('thead')[0];
-            tableHeader.innerHTML = '';
-            tableBody.innerHTML = '';
-
-            // Reset any other UI elements if needed (e.g., buttons, messages)
-            const message = document.querySelector(".temporary-message");
-            if (message) {
-                message.remove();
-            }
+            document.getElementById('dataTable').getElementsByTagName('thead')[0].innerHTML = '';
+            document.getElementById('dataTable').getElementsByTagName('tbody')[0].innerHTML = '';
+            window.processedData = null;
         }
-function copyTable(includeLevel) {
-    const inputData = document.getElementById('inputData').value.trim();
-    const rows = inputData.split('\n');
-    const levelData = {};
-    const unitNumbers = new Set();
 
-    // Process input data (same as processData function)
-    rows.forEach(row => {
-        const columns = row.trim().split(/[\t\s]+/);
-        if (columns.length >= 3) {
-            let code = columns[0].trim();
-            const unit = columns[columns.length - 1].trim();
+        function copyTable(includeLevel) {
+            if (!window.processedData) {
+                showMessage("Please process data first");
+                return;
+            }
 
-            const unitParts = unit.replace('#', '').split('-');
-            if (unitParts.length === 2) {
-                const level = unitParts[0];
-                const unitNumber = unitParts[1];
+            const { levelData, unitArray } = window.processedData;
+            
+            // Create a hidden div to hold our table for copying
+            const container = document.createElement('div');
+            container.style.position = 'fixed';
+            container.style.top = '-9999px';
+            document.body.appendChild(container);
 
-                if (!levelData[level]) {
-                    levelData[level] = {};
+            // Create a new table for copying
+            const table = document.createElement('table');
+            table.style.borderCollapse = 'collapse';
+            container.appendChild(table);
+
+            // Create header row
+            const headerRow = table.insertRow();
+            if (includeLevel) {
+                const levelHeader = headerRow.insertCell();
+                levelHeader.textContent = 'Level';
+                levelHeader.style.border = '1px solid black';
+            }
+
+            // Add unit headers
+            unitArray.forEach(unit => {
+                const cell = headerRow.insertCell();
+                cell.textContent = unit;
+                cell.style.border = '1px solid black';
+            });
+
+            // Add data rows
+            const levels = Object.keys(levelData);
+            const sortedLevels = levels.filter(level => level !== '01')
+                .sort((a, b) => parseInt(a) - parseInt(b));
+            if (levels.includes('01')) {
+                sortedLevels.push('01');
+            }
+
+            sortedLevels.forEach(level => {
+                const row = table.insertRow();
+                
+                if (includeLevel) {
+                    const levelCell = row.insertCell();
+                    levelCell.textContent = level;
+                    levelCell.style.border = '1px solid black';
                 }
 
-                if (code === '') {
-                    levelData[level][unitNumber] = ' ';
-                } else {
-                    code = code.toUpperCase();
-                    if (code === 'A' || code === 'C') {
-                        levelData[level][unitNumber] = code;
-                    } else {
-                        levelData[level][unitNumber] = ' ';
-                    }
-                }
+                unitArray.forEach(unit => {
+                    const cell = row.insertCell();
+                    const value = levelData[level][unit];
+                    cell.style.backgroundColor = getColorForValue(value);
+                    cell.style.border = '1px solid black';
+                    cell.innerHTML = '&nbsp;'; // Ensure cell has content
+                    cell.style.width = '30px';
+                    cell.style.height = '20px';
+                });
+            });
 
-                unitNumbers.add(unitNumber);
+            // Select and copy the table
+            const range = document.createRange();
+            range.selectNode(table);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            
+            try {
+                document.execCommand('copy');
+                showMessage(includeLevel ? "Table copied with levels" : "Table copied without levels");
+            } catch (err) {
+                showMessage("Failed to copy table");
+                console.error('Copy failed:', err);
             }
+
+            // Cleanup
+            document.body.removeChild(container);
+            selection.removeAllRanges();
         }
-    });
 
-    const unitArray = Array.from(unitNumbers).sort((a, b) => parseInt(a) - parseInt(b));
-
-    let tableHtml = "<table>";
-
-    // Header Row
-    tableHtml += "<tr>";
-    tableHtml += "<th>Level</th>";
-    unitArray.forEach(unit => {
-        tableHtml += `<th>${unit}</th>`;
-    });
-    tableHtml += "</tr>";
-
-    // Levels Row
-    const levels = Object.keys(levelData);
-    const sortedLevels = levels.filter(level => level !== '01').sort((a, b) => parseInt(a) - parseInt(b));
-
-    if (levels.includes('01')) {
-        sortedLevels.push('01');
-    }
-
-    sortedLevels.forEach(level => {
-        tableHtml += "<tr>";
-        tableHtml += `<td>${level}</td>`;
-        unitArray.forEach(unit => {
-            const value = levelData[level][unit];
-            let cellColor = '#FFFFFF'; // Default to white
-
-            if (value === 'A') {
-                cellColor = '#00FF00'; // Green
-            } else if (value === 'C') {
-                cellColor = '#FF0000'; // Red
-            } else if (value === undefined) {
-                cellColor = '#000000'; // Black
-            }
-
-            tableHtml += `<td style="background-color:${cellColor};border: 1px solid black;"></td>`; // Empty cell with color
-        });
-        tableHtml += "</tr>";
-    });
-
-    tableHtml += "</table>";
-
-    // Debugging step: Log table HTML
-    console.log("Generated Table HTML:\n", tableHtml);
-
-    // Create a temporary hidden iframe to simulate the copy process
-    const iframe = document.createElement("iframe");
-    iframe.style.position = "absolute";
-    iframe.style.top = "-9999px";
-    iframe.style.left = "-9999px";
-    document.body.appendChild(iframe);
-
-    // Write the table HTML into the iframe's document
-    const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-    iframeDoc.open();
-    iframeDoc.write("<html><head><style>table, td, th {border: 1px solid black; padding: 5px;}</style></head><body>");
-    iframeDoc.write(tableHtml);
-    iframeDoc.write("</body></html>");
-    iframeDoc.close();
-
-    // Ensure the content is loaded and select it
-    const table = iframeDoc.querySelector("table");  // Select the entire table
-    const range = iframeDoc.createRange();
-    range.selectNodeContents(table);  // Select the entire table
-    const selection = iframeDoc.getSelection();
-    selection.removeAllRanges();
-    selection.addRange(range);
-
-    // Debugging step: log the selection range to confirm selection includes all cells
-    console.log("Selection Range: ", selection);
-
-    // Copy the content to clipboard
-    iframeDoc.execCommand("copy");
-
-    // Clean up the iframe after the operation
-    document.body.removeChild(iframe);
-
-    // Create and show a temporary message
-    const message = document.createElement("div");
-    message.textContent = includeLevel
-        ? "Colors with level successfully copied"
-        : "Colors successfully copied";
-    message.style.position = "fixed";
-    message.style.top = "20px";
-    message.style.left = "50%";
-    message.style.transform = "translateX(-50%)";
-    message.style.padding = "10px 20px";
-    message.style.backgroundColor = "#4CAF50";
-    message.style.color = "#fff";
-    message.style.fontSize = "16px";
-    message.style.borderRadius = "5px";
-    message.style.zIndex = "9999";
-    document.body.appendChild(message);
-
-    // Remove the message after 2 seconds
-    setTimeout(() => {
-        message.remove();
-    }, 2000);
-}
-
-
-
-        // Function to convert RGB to Hex color code
-function rgbToHex(rgb) {
-    const result = rgb.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
-    if (result) {
-        const r = parseInt(result[1]).toString(16).padStart(2, '0');
-        const g = parseInt(result[2]).toString(16).padStart(2, '0');
-        const b = parseInt(result[3]).toString(16).padStart(2, '0');
-        return r + g + b;
-    }
-    return 'FFFFFF'; // default to white if parsing fails
-}
-
-
-
+        function showMessage(text) {
+            const message = document.createElement('div');
+            message.textContent = text;
+            message.style.position = 'fixed';
+            message.style.top = '0px';
+            message.style.left = '50%';
+            message.style.transform = 'translateX(-50%)';
+            message.style.padding = '10px 20px';
+            message.style.backgroundColor = '#4CAF50';
+            message.style.color = '#fff';
+            message.style.borderRadius = '5px';
+            message.style.zIndex = '9999';
+            
+            document.body.appendChild(message);
+            setTimeout(() => message.remove(), 2000);
+        }
     </script>
 </body>
 </html>
