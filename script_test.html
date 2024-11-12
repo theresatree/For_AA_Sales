@@ -133,7 +133,7 @@
 </head>
 <body>
     <h1>Data Filter and Table Generator for AA Sales</h1>
-    <p>ver.4</p>
+    <p>ver.5</p>
     <p>Paste your data below</p>
     <textarea id="inputData" placeholder="Paste data here..."></textarea>
     <div class="controls">
@@ -223,17 +223,20 @@
             thead.innerHTML = '';
             tbody.innerHTML = '';
         
+            // Create table header
             const headerRow = thead.insertRow();
             const levelHeader = headerRow.insertCell();
             levelHeader.textContent = 'Level';
             levelHeader.style.fontWeight = 'bold';
         
+            // Create unit number headers
             unitArray.forEach(unit => {
                 const th = headerRow.insertCell();
                 th.textContent = unit;
                 th.style.fontWeight = 'bold';
             });
         
+            // Sort and display levels (excluding '01' at first, then pushing it to the end)
             const levels = Object.keys(levelData);
             const sortedLevels = levels.filter(level => level !== '01')
                 .sort((a, b) => parseInt(a) - parseInt(b));
@@ -241,6 +244,7 @@
                 sortedLevels.push('01');
             }
         
+            // Display rows for each level
             sortedLevels.forEach(level => {
                 const row = tbody.insertRow();
                 const levelCell = row.insertCell();
@@ -248,20 +252,27 @@
         
                 unitArray.forEach(unit => {
                     const cell = row.insertCell();
-                    const unitData = levelData[level][unit];  // Get the data for this unit (code + status)
+                    const unitData = levelData[level] && levelData[level][unit];  // Safely get unit data
         
                     // Apply background color based on the value (e.g., 'C' or 'A')
-                    cell.style.backgroundColor = getColorForValue(unitData.code);
-                    console.log(level, unit, code, status);
-                    // If the status is "HOME PASSED", display 'p' in the cell
-                    if (unitData.status === "HOME PASSED") {
-                        cell.textContent = 'p';  // Insert 'p' if the status is "HOME PASSED"
+                    if (unitData && unitData.code) {
+                        cell.style.backgroundColor = getColorForValue(unitData.code);
+        
+                        // If the status is "HOME PASSED", display 'p' in the cell
+                        if (unitData.status === "HOME PASSED") {
+                            cell.textContent = 'p';  // Insert 'p' if the status is "HOME PASSED"
+                        } else {
+                            cell.innerHTML = '&nbsp;';  // Otherwise, keep it empty or with existing data
+                        }
                     } else {
-                        cell.innerHTML = '&nbsp;';  // Otherwise, keep it empty or with existing data
+                        // Default behavior if unitData is not found
+                        cell.style.backgroundColor = '#FFFFFF'; // Default background if data is missing
+                        cell.innerHTML = '&nbsp;'; // Keep it empty if no data
                     }
                 });
             });
         }
+
         
         
         function getColorForValue(value) {
