@@ -186,12 +186,12 @@
                         }
         
                         // Assign the code (e.g., C) to the levelData for that unit
-                        code = code.toUpperCase();
-                        if (code === '') {
-                            levelData[level][unitNumber] = { code: ' ', status: status }; // Add status here
-                        } else if (code === 'A' || code === 'C'){
-                            levelData[level][unitNumber] = { code: code , status: status };
+                        if (!code) {  // This checks for falsy values like "" (empty string), null, undefined
+                            levelData[level][unitNumber] = { code: ' ', status: status }; // Set code to a space
+                        } else if (code === 'A' || code === 'C') {
+                            levelData[level][unitNumber] = { code: code, status: status };
                         }
+
         
                         unitNumbers.add(unitNumber);
                     }
