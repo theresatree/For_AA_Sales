@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Data Filter and Table Generator for AA Sales</title>
-    <p>Edited to include "Fiber_Coverage" and "Postal Code" Column v5</p>
+    <p>Edited to include "Fiber_Coverage" and "Postal Code" Column v6</p>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
     <style>
         * {
@@ -255,7 +255,7 @@
         function getColorForValue(value) {
             if (value === 'A') return '#00FF00'; // Green for 'A'
             if (value === 'C') return '#FF0000'; // Red for 'C'
-            if (value === undefined) return '#000000'; // Black for undefined
+            if (value === ' ') return '#000000'; // Black for undefined
             return '#FFFFFF'; // Default color (white) for other values
         }
 
