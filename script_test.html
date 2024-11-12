@@ -133,7 +133,7 @@
 </head>
 <body>
     <h1>Data Filter and Table Generator for AA Sales</h1>
-    <p>ver.3</p>
+    <p>ver.4</p>
     <p>Paste your data below</p>
     <textarea id="inputData" placeholder="Paste data here..."></textarea>
     <div class="controls">
@@ -162,7 +162,7 @@
             const rows = inputData.split('\n');
             const levelData = {};
             const unitNumbers = new Set();
-        
+            
             // Variables to store status and postal code
             let postalCode = null; 
             let status = null;
@@ -187,13 +187,13 @@
         
                         // Assign the code (e.g., C) to the levelData for that unit
                         if (code === '') {
-                            levelData[level][unitNumber] = ' ';
+                            levelData[level][unitNumber] = { code: ' ', status: 'HOME REACHED' }; // Add status here
                         } else {
                             code = code.toUpperCase();
                             if (code === 'A' || code === 'C') {
-                                levelData[level][unitNumber] = code;
+                                levelData[level][unitNumber] = { code: code, status: status };
                             } else {
-                                levelData[level][unitNumber] = ' ';
+                                levelData[level][unitNumber] = { code: ' ', status: 'HOME REACHED' };
                             }
                         }
         
@@ -213,13 +213,13 @@
         
             displayTable(levelData, unitArray);
         }
-
-
+        
+        
         function displayTable(levelData, unitArray) {
             const table = document.getElementById('dataTable');
             const thead = table.getElementsByTagName('thead')[0];
             const tbody = table.getElementsByTagName('tbody')[0];
-            
+        
             thead.innerHTML = '';
             tbody.innerHTML = '';
         
@@ -262,14 +262,15 @@
                 });
             });
         }
-
-
+        
+        
         function getColorForValue(value) {
             if (value === 'A') return '#00FF00';
             if (value === 'C') return '#FF0000';
-            if (value === undefined) return '#000000';
+            if (value === ' ') return '#FFFFFF';  // Empty spaces are white
             return '#FFFFFF';
         }
+
 
         function clearData() {
             document.getElementById('inputData').value = '';
