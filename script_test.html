@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Data Filter and Table Generator for AA Sales</title>
-    <p>Edited to include "Fiber_Coverage" and "Postal Code" Column v2</p>
+    <p>Edited to include "Fiber_Coverage" and "Postal Code" Column v3</p>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
     <style>
         * {
@@ -207,7 +207,7 @@
             displayTable(levelData, unitArray, unitData);
         }
         
-        function displayTable(levelData, unitArray, unitData) {
+        function displayTable(levelData, unitArray) {
             const table = document.getElementById('dataTable');
             const thead = table.getElementsByTagName('thead')[0];
             const tbody = table.getElementsByTagName('tbody')[0];
@@ -220,21 +220,11 @@
             levelHeader.textContent = 'Level';
             levelHeader.style.fontWeight = 'bold';
         
-            const statusHeader = headerRow.insertCell();
-            statusHeader.textContent = 'Status';
-            statusHeader.style.fontWeight = 'bold';
-        
-            const codeHeader = headerRow.insertCell();
-            codeHeader.textContent = 'Code';
-            codeHeader.style.fontWeight = 'bold';
-        
-            const unitHeader = headerRow.insertCell();
-            unitHeader.textContent = 'Unit';
-            unitHeader.style.fontWeight = 'bold';
-        
-            const postalHeader = headerRow.insertCell();
-            postalHeader.textContent = 'Postal Code';
-            postalHeader.style.fontWeight = 'bold';
+            unitArray.forEach(unit => {
+                const th = headerRow.insertCell();
+                th.textContent = unit;
+                th.style.fontWeight = 'bold';
+            });
         
             const levels = Object.keys(levelData);
             const sortedLevels = levels.filter(level => level !== '01')
@@ -244,30 +234,19 @@
             }
         
             sortedLevels.forEach(level => {
+                const row = tbody.insertRow();
+                const levelCell = row.insertCell();
+                levelCell.textContent = level;
+        
                 unitArray.forEach(unit => {
-                    const row = tbody.insertRow();
-        
-                    const levelCell = row.insertCell();
-                    levelCell.textContent = level;
-        
-                    const statusCell = row.insertCell();
-                    statusCell.textContent = unitData[unit].status;
-        
-                    const codeCell = row.insertCell();
+                    const cell = row.insertCell();
                     const value = levelData[level][unit];
-                    codeCell.style.backgroundColor = getColorForValue(value);
-                    codeCell.innerHTML = unitData[unit].status === 'HOME PASSED' ? 'P' : (value === ' ' ? '&nbsp;' : value);
-        
-                    const unitCell = row.insertCell();
-                    unitCell.textContent = unit;
-        
-                    const postalCell = row.insertCell();
-                    postalCell.textContent = unitData[unit].postalCode;
+                    cell.style.backgroundColor = getColorForValue(value);
+                    cell.innerHTML = value === 'HOME PASSED' ? 'P' : '&nbsp;';
                 });
             });
         }
-
-
+        
         function getColorForValue(value) {
             if (value === 'A') return '#00FF00';
             if (value === 'C') return '#FF0000';
