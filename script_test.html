@@ -133,7 +133,7 @@
 </head>
 <body>
     <h1>Data Filter and Table Generator for AA Sales</h1>
-    <p>ver.5</p>
+    <p>ver.6</p>
     <p>Paste your data below</p>
     <textarea id="inputData" placeholder="Paste data here..."></textarea>
     <div class="controls">
@@ -243,7 +243,10 @@
             if (levels.includes('01')) {
                 sortedLevels.push('01');
             }
-        
+
+            console.log("Level Data: ", levelData);
+            console.log("Unit Array: ", unitArray);
+            
             // Display rows for each level
             sortedLevels.forEach(level => {
                 const row = tbody.insertRow();
@@ -253,6 +256,9 @@
                 unitArray.forEach(unit => {
                     const cell = row.insertCell();
                     const unitData = levelData[level] && levelData[level][unit];  // Safely get unit data
+
+                    console.log(`Unit Data for Level ${level}, Unit ${unit}:`, unitData);
+                    console.log("Unit Data Status: ", unitData.Status);
         
                     // Apply background color based on the value (e.g., 'C' or 'A')
                     if (unitData && unitData.code) {
