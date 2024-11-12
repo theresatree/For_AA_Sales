@@ -170,7 +170,7 @@
             rows.forEach(row => {
                 const columns = row.trim().split(/[\t\s]+/);
                 
-                if (columns.length >= 4) {  // Ensure there are at least 4 columns
+                if (columns.length >= 5) {  // Ensure there are at least 4 columns
                     status = columns[0].trim();  // First column as status (e.g., HOME REACHED)
                     postalCode = columns[1].trim();  // Second column as postal code (e.g., 760101)
                     let code = columns[2].trim();  // Third column as code (e.g., C)
