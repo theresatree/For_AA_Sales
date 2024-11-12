@@ -250,7 +250,12 @@
                     const cell = row.insertCell();
                     const value = levelData[level][unit];
                     cell.style.backgroundColor = getColorForValue(value);
-                    cell.innerHTML = '&nbsp;';
+                    // Check if status is "HOME PASSED", if so, insert 'p'
+                    if (window.processedData && window.processedData.status === "HOME PASSED") {
+                        cell.textContent = 'p';  // Add the text 'p' for HOME PASSED status
+                    } else {
+                        cell.innerHTML = '&nbsp;'; // Keep the original empty space if not "HOME PASSED"
+                    }
                 });
             });
         }
