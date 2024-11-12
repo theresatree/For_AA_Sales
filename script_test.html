@@ -164,9 +164,11 @@
 
             rows.forEach(row => {
                 const columns = row.trim().split(/[\t\s]+/);
-                if (columns.length >= 3) {
-                    let code = columns[0].trim();
-                    const unit = columns[columns.length - 1].trim();
+                if (columns.length >= 5) {  // Check for minimum columns to avoid errors
+                    const status = columns[0].trim(); // New column 1: HOME REACHED
+                    const postalCode = columns[1].trim(); // New column 2: 760108
+                    let code = columns[2].trim(); // Existing column: A
+                    const unit = columns[columns.length - 1].trim(); // Existing column: #09-317
 
                     const unitParts = unit.replace('#', '').split(/[-_]/);
                     if (unitParts.length === 2) {
@@ -238,9 +240,24 @@
                     const cell = row.insertCell();
                     const value = levelData[level][unit];
                     cell.style.backgroundColor = getColorForValue(value);
-                    cell.innerHTML = '&nbsp;';
+                    if (data) {
+                        cell.innerHTML = data.status === 'HOME PASSED' ? 'P' : (data.code === ' ' ? '&nbsp;' : data.code);
+                    } else {
+                        cell.innerHTML = '&nbsp;'; // Leave blank if there's no data
+                    }
                 });
             });
+
+            const postalRow = tbody.insertRow();
+            // Leave the first two cells blank
+            postalRow.insertCell().innerHTML = '&nbsp;';
+            postalRow.insertCell().innerHTML = '&nbsp;';
+        
+            // Add the postal code in the third cell
+            const postalCell = postalRow.insertCell();
+            postalCell.colSpan = unitArray.length - 2; // Adjust span if needed
+            postalCell.textContent = `Postal Code: ${postalCode}`;
+            postalCell.style.fontWeight = 'bold';
         }
 
         function getColorForValue(value) {
@@ -313,6 +330,17 @@
                     cell.style.height = '20px';
                 });
             });
+
+            const postalRow = table.insertRow();
+            postalRow.insertCell().innerHTML = '&nbsp;'; // First empty cell
+            postalRow.insertCell().innerHTML = '&nbsp;'; // Second empty cell
+            
+            const postalCell = postalRow.insertCell();
+            postalCell.colSpan = unitArray.length - 2; // Adjust span to match display
+            postalCell.textContent = `Postal Code: ${postalCode}`;
+            postalCell.style.border = 'none'; // Removes the border entirely
+            postalCell.style.fontWeight = 'bold';
+
 
             const range = document.createRange();
             range.selectNode(table);
