@@ -203,10 +203,10 @@
                 unitArray: unitArray
             };
 
-            displayTable(levelData, unitArray);
+            displayTable(levelData, unitArray, status, postalCode);
         }
 
-        function displayTable(levelData, unitArray) {
+        function displayTable(levelData, unitArray, status, postalCode) {
             const table = document.getElementById('dataTable');
             const thead = table.getElementsByTagName('thead')[0];
             const tbody = table.getElementsByTagName('tbody')[0];
@@ -241,24 +241,16 @@
                     const cell = row.insertCell();
                     const value = levelData[level][unit];
                     cell.style.backgroundColor = getColorForValue(value);
-                    if (data) {
-                        cell.innerHTML = data.status === 'HOME PASSED' ? 'P' : (data.code === ' ' ? '&nbsp;' : data.code);
-                    } else {
-                        cell.innerHTML = '&nbsp;'; // Leave blank if there's no data
-                    }
+                    cell.innerHTML = data.status === 'HOME PASSED' ? 'P' : (data.code === ' ' ? '&nbsp;' : data.code);
                 });
             });
 
             const postalRow = tbody.insertRow();
-            // Leave the first two cells blank
             postalRow.insertCell().innerHTML = '&nbsp;';
             postalRow.insertCell().innerHTML = '&nbsp;';
-        
-            // Add the postal code in the third cell
             const postalCell = postalRow.insertCell();
-            postalCell.colSpan = unitArray.length - 2; // Adjust span if needed
+            postalCell.colSpan = unitArray.length - 2;
             postalCell.textContent = `Postal Code: ${postalCode}`;
-            postalCell.style.fontWeight = 'bold';
         }
 
         function getColorForValue(value) {
@@ -281,7 +273,7 @@
                 return;
             }
 
-            const { levelData, unitArray } = window.processedData;
+            const { levelData, unitArray, status, postalCode } = window.processedData;
             
             const container = document.createElement('div');
             container.style.position = 'fixed';
