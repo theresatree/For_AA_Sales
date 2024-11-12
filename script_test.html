@@ -252,10 +252,6 @@
             sortedLevels.push('01');
         }
     
-        // Log levelData and unitArray for debugging
-        console.log("Level Data: ", levelData);
-        console.log("Unit Array: ", unitArray);
-    
         // Display rows for each level
         sortedLevels.forEach(level => {
             const row = tbody.insertRow();
@@ -265,9 +261,6 @@
             unitArray.forEach(unit => {
                 const cell = row.insertCell();
                 const unitData = levelData[level] && levelData[level][unit];  // Safely get unit data
-    
-                // Log the unitData for the current level and unit for debugging
-                console.log(`Unit Data for Level ${level}, Unit ${unit}:`, unitData);
     
                 if (unitData) {
                     // Apply background color based on the value (e.g., 'C' or 'A')
@@ -280,8 +273,6 @@
                         cell.innerHTML = '&nbsp;';  // Otherwise, keep it empty or with existing data
                     }
                 } else {
-                    // Handle missing unitData case (log for debugging)
-                    console.log(`Missing data for Level ${level}, Unit ${unit}`);
                     
                     // Default behavior if unitData is not found
                     cell.style.backgroundColor = '#000000'; // Set background to black
