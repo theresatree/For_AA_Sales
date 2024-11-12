@@ -133,7 +133,7 @@
 </head>
 <body>
     <h1>Data Filter and Table Generator for AA Sales</h1>
-    <p>ver.7</p>
+    <p>ver.8</p>
     <p>Paste your data below</p>
     <textarea id="inputData" placeholder="Paste data here..."></textarea>
     <div class="controls">
@@ -284,7 +284,7 @@ function displayTable(levelData, unitArray) {
         function getColorForValue(value) {
             if (value === 'A') return '#00FF00';
             if (value === 'C') return '#FF0000';
-            if (value === ' ') return '#FFFFFF';  // Empty spaces are white
+            if (value === undefined) return '#000000';
             return '#FFFFFF';
         }
 
