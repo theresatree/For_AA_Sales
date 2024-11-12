@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Data Filter and Table Generator for AA Sales</title>
-    <p>Edited to include "Fiber_Coverage" and "Postal Code" Column</p>
+    <p>Edited to include "Fiber_Coverage" and "Postal Code" Column v2</p>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
     <style>
         * {
@@ -161,52 +161,53 @@
             const inputData = document.getElementById('inputData').value.trim();
             const rows = inputData.split('\n');
             const levelData = {};
-            const unitNumbers = new Set();
-
+            const unitData = {};
+        
             rows.forEach(row => {
                 const columns = row.trim().split(/[\t\s]+/);
-                if (columns.length >= 5) {  // Check for minimum columns to avoid errors
-                    const status = columns[0].trim(); // New column 1: HOME REACHED
-                    const postalCode = columns[1].trim(); // New column 2: 760108
-                    let code = columns[2].trim(); // Existing column: A
-                    const unit = columns[columns.length - 1].trim(); // Existing column: #09-317
-
+                if (columns.length >= 5) {
+                    const status = columns[0].trim();
+                    const postalCode = columns[1].trim();
+                    const code = columns[2].trim().toUpperCase();
+                    const unit = columns[columns.length - 1].trim();
+        
                     const unitParts = unit.replace('#', '').split(/[-_]/);
                     if (unitParts.length === 2) {
                         const level = unitParts[0];
                         const unitNumber = unitParts[1];
-
+        
                         if (!levelData[level]) {
                             levelData[level] = {};
                         }
-
-                        if (code === '') {
-                            levelData[level][unitNumber] = ' ';
+        
+                        if (code === 'A' || code === 'C') {
+                            levelData[level][unitNumber] = code;
                         } else {
-                            code = code.toUpperCase();
-                            if (code === 'A' || code === 'C') {
-                                levelData[level][unitNumber] = code;
-                            } else {
-                                levelData[level][unitNumber] = ' ';
-                            }
+                            levelData[level][unitNumber] = ' ';
                         }
-
-                        unitNumbers.add(unitNumber);
+        
+                        if (!unitData[unitNumber]) {
+                            unitData[unitNumber] = {
+                                status: status,
+                                postalCode: postalCode
+                            };
+                        }
                     }
                 }
             });
-
-            const unitArray = Array.from(unitNumbers).sort((a, b) => parseInt(a) - parseInt(b));
-
+        
+            const unitArray = Object.keys(unitData).sort((a, b) => parseInt(a) - parseInt(b));
+        
             window.processedData = {
                 levelData: levelData,
+                unitData: unitData,
                 unitArray: unitArray
             };
-
-            displayTable(levelData, unitArray, status, postalCode);
+        
+            displayTable(levelData, unitArray, unitData);
         }
-
-        function displayTable(levelData, unitArray, status, postalCode) {
+        
+        function displayTable(levelData, unitArray, unitData) {
             const table = document.getElementById('dataTable');
             const thead = table.getElementsByTagName('thead')[0];
             const tbody = table.getElementsByTagName('tbody')[0];
@@ -231,6 +232,10 @@
             unitHeader.textContent = 'Unit';
             unitHeader.style.fontWeight = 'bold';
         
+            const postalHeader = headerRow.insertCell();
+            postalHeader.textContent = 'Postal Code';
+            postalHeader.style.fontWeight = 'bold';
+        
             const levels = Object.keys(levelData);
             const sortedLevels = levels.filter(level => level !== '01')
                 .sort((a, b) => parseInt(a) - parseInt(b));
@@ -239,33 +244,29 @@
             }
         
             sortedLevels.forEach(level => {
-                const row = tbody.insertRow();
-        
-                const levelCell = row.insertCell();
-                levelCell.textContent = level;
-        
-                const statusCell = row.insertCell();
-                statusCell.textContent = status;
-        
                 unitArray.forEach(unit => {
+                    const row = tbody.insertRow();
+        
+                    const levelCell = row.insertCell();
+                    levelCell.textContent = level;
+        
+                    const statusCell = row.insertCell();
+                    statusCell.textContent = unitData[unit].status;
+        
                     const codeCell = row.insertCell();
                     const value = levelData[level][unit];
                     codeCell.style.backgroundColor = getColorForValue(value);
-                    codeCell.innerHTML = status === 'HOME PASSED' ? 'P' : (value === ' ' ? '&nbsp;' : value);
+                    codeCell.innerHTML = unitData[unit].status === 'HOME PASSED' ? 'P' : (value === ' ' ? '&nbsp;' : value);
         
                     const unitCell = row.insertCell();
                     unitCell.textContent = unit;
+        
+                    const postalCell = row.insertCell();
+                    postalCell.textContent = unitData[unit].postalCode;
                 });
             });
-        
-            const postalRow = tbody.insertRow();
-            postalRow.insertCell().innerHTML = '&nbsp;';
-            postalRow.insertCell().innerHTML = '&nbsp;';
-            postalRow.insertCell().innerHTML = '&nbsp;';
-            const postalCell = postalRow.insertCell();
-            postalCell.colSpan = unitArray.length - 1;
-            postalCell.textContent = `Postal Code: ${postalCode}`;
         }
+
 
         function getColorForValue(value) {
             if (value === 'A') return '#00FF00';
