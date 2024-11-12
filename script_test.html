@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Data Filter and Table Generator for AA Sales</title>
-    <p>Edited to include "Fiber_Coverage" and "Postal Code" Column v3</p>
+    <p>Edited to include "Fiber_Coverage" and "Postal Code" Column v4</p>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
     <style>
         * {
@@ -43,7 +43,7 @@
             padding: 10px;
             border: 1px solid #ccc;
             border-radius: 4px;
-            font-size: 16px; /* Prevents iOS zoom on focus */
+            font-size: 16px;
         }
 
         .controls, .button-group {
@@ -120,7 +120,6 @@
                 border-radius: 4px;
             }
 
-            /* Add horizontal scroll indicator */
             .table-container::after {
                 content: '← Scroll horizontally →';
                 display: block;
@@ -156,13 +155,12 @@
     </div>
 
     <script>
-        // Previous JavaScript remains exactly the same
         function processData() {
             const inputData = document.getElementById('inputData').value.trim();
             const rows = inputData.split('\n');
             const levelData = {};
             const unitData = {};
-        
+
             rows.forEach(row => {
                 const columns = row.trim().split(/[\t\s]+/);
                 if (columns.length >= 5) {
@@ -170,22 +168,22 @@
                     const postalCode = columns[1].trim();
                     const code = columns[2].trim().toUpperCase();
                     const unit = columns[columns.length - 1].trim();
-        
+
                     const unitParts = unit.replace('#', '').split(/[-_]/);
                     if (unitParts.length === 2) {
                         const level = unitParts[0];
                         const unitNumber = unitParts[1];
-        
+
                         if (!levelData[level]) {
                             levelData[level] = {};
                         }
-        
+
                         if (code === 'A' || code === 'C') {
                             levelData[level][unitNumber] = code;
                         } else {
                             levelData[level][unitNumber] = ' ';
                         }
-        
+
                         if (!unitData[unitNumber]) {
                             unitData[unitNumber] = {
                                 status: status,
@@ -195,63 +193,71 @@
                     }
                 }
             });
-        
+
             const unitArray = Object.keys(unitData).sort((a, b) => parseInt(a) - parseInt(b));
-        
+
             window.processedData = {
                 levelData: levelData,
                 unitData: unitData,
                 unitArray: unitArray
             };
-        
+
             displayTable(levelData, unitArray, unitData);
         }
-        
-        function displayTable(levelData, unitArray) {
+
+        function displayTable(levelData, unitArray, unitData) {
             const table = document.getElementById('dataTable');
             const thead = table.getElementsByTagName('thead')[0];
             const tbody = table.getElementsByTagName('tbody')[0];
-        
+
             thead.innerHTML = '';
             tbody.innerHTML = '';
-        
+
             const headerRow = thead.insertRow();
             const levelHeader = headerRow.insertCell();
             levelHeader.textContent = 'Level';
             levelHeader.style.fontWeight = 'bold';
-        
+
             unitArray.forEach(unit => {
                 const th = headerRow.insertCell();
                 th.textContent = unit;
                 th.style.fontWeight = 'bold';
             });
-        
+
             const levels = Object.keys(levelData);
             const sortedLevels = levels.filter(level => level !== '01')
                 .sort((a, b) => parseInt(a) - parseInt(b));
             if (levels.includes('01')) {
                 sortedLevels.push('01');
             }
-        
+
             sortedLevels.forEach(level => {
                 const row = tbody.insertRow();
                 const levelCell = row.insertCell();
                 levelCell.textContent = level;
-        
+
                 unitArray.forEach(unit => {
                     const cell = row.insertCell();
                     const value = levelData[level][unit];
+                    const status = unitData[unit]?.status;
+
                     cell.style.backgroundColor = getColorForValue(value);
-                    cell.innerHTML = value === 'HOME PASSED' ? 'P' : '&nbsp;';
+
+                    if (status === 'HOME PASSED') {
+                        cell.innerHTML = 'P';
+                        cell.style.color = '#FFFFFF';
+                    } else {
+                        cell.innerHTML = '&nbsp;';
+                    }
                 });
             });
         }
-        
+
         function getColorForValue(value) {
-            if (value === 'A') return '#00FF00';
-            if (value === 'C') return '#FF0000';
-            if (value === undefined) return '#000000';
-            return '#FFFFFF';
+            if (value === 'A') return '#00FF00'; // Green for 'A'
+            if (value === 'C') return '#FF0000'; // Red for 'C'
+            if (value === undefined) return '#000000'; // Black for undefined
+            return '#FFFFFF'; // Default color (white) for other values
         }
 
         function clearData() {
@@ -267,8 +273,8 @@
                 return;
             }
 
-            const { levelData, unitArray, status, postalCode } = window.processedData;
-            
+            const { levelData, unitArray } = window.processedData;
+
             const container = document.createElement('div');
             container.style.position = 'fixed';
             container.style.top = '-9999px';
@@ -300,7 +306,6 @@
 
             sortedLevels.forEach(level => {
                 const row = table.insertRow();
-                
                 if (includeLevel) {
                     const levelCell = row.insertCell();
                     levelCell.textContent = level;
@@ -313,28 +318,15 @@
                     cell.style.backgroundColor = getColorForValue(value);
                     cell.style.border = '1px solid black';
                     cell.innerHTML = '&nbsp;';
-                    cell.style.width = '30px';
-                    cell.style.height = '20px';
                 });
             });
-
-            const postalRow = table.insertRow();
-            postalRow.insertCell().innerHTML = '&nbsp;'; // First empty cell
-            postalRow.insertCell().innerHTML = '&nbsp;'; // Second empty cell
-            
-            const postalCell = postalRow.insertCell();
-            postalCell.colSpan = unitArray.length - 2; // Adjust span to match display
-            postalCell.textContent = `Postal Code: ${postalCode}`;
-            postalCell.style.border = 'none'; // Removes the border entirely
-            postalCell.style.fontWeight = 'bold';
-
 
             const range = document.createRange();
             range.selectNode(table);
             const selection = window.getSelection();
             selection.removeAllRanges();
             selection.addRange(range);
-            
+
             try {
                 document.execCommand('copy');
                 showMessage(includeLevel ? "Table copied with levels" : "Table copied without levels");
@@ -351,19 +343,19 @@
             const message = document.createElement('div');
             message.textContent = text;
             message.style.position = 'fixed';
-            message.style.top = '0';
+            message.style.top = '10px';
             message.style.left = '50%';
             message.style.transform = 'translateX(-50%)';
-            message.style.padding = '10px 20px';
-            message.style.backgroundColor = '#4CAF50';
-            message.style.color = '#fff';
+            message.style.backgroundColor = '#444';
+            message.style.color = 'white';
+            message.style.padding = '10px';
             message.style.borderRadius = '5px';
-            message.style.zIndex = '9999';
-            message.style.margin = '0'; // Remove any default margin
-            message.style.boxSizing = 'border-box'; // Ensures padding doesn’t push it down
-            
+            message.style.zIndex = '1000';
             document.body.appendChild(message);
-            setTimeout(() => message.remove(), 2000);
+
+            setTimeout(() => {
+                document.body.removeChild(message);
+            }, 3000);
         }
     </script>
 </body>
