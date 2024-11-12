@@ -289,10 +289,12 @@
         // Fill the first additional row with empty cells
         additionalRow1.insertCell().innerHTML = '&nbsp;'; // Empty cell for level header
         unitArray.forEach(() => additionalRow1.insertCell().innerHTML = '&nbsp;'); // Empty cells for unit numbers
-        
+
+        const firstEmptyCell = additionalRow2.insertCell();
+        firstEmptyCell.innerHTML = '&nbsp;';
         // Fill the second additional row with postal code in the first cell
         const postalCodeRow = additionalRow2.insertCell();
-        postalCodeRow.setAttribute('colspan', unitArray.length + 1);  // Make postal code cell span across all columns
+        postalCodeRow.setAttribute('colspan', unitArray.length);  // Make postal code cell span across all columns
         postalCodeRow.style.textAlign = 'center';  // Center align the text
         postalCodeRow.innerHTML = window.processedData.postalCode || '&nbsp;'; // Insert postal code
 
