@@ -315,97 +315,93 @@
             window.processedData = null;
         }
 
-    function copyTable(includeLevel) {
-        if (!window.processedData) {
-            showMessage("Please process data first");
-            return;
-        }
-    
-        const { levelData, unitArray } = window.processedData;
-    
-        const container = document.createElement('div');
-        container.style.position = 'fixed';
-        container.style.top = '-9999px';
-        document.body.appendChild(container);
-    
-        const table = document.createElement('table');
-        table.style.borderCollapse = 'collapse';
-        container.appendChild(table);
-    
-        const headerRow = table.insertRow();
-        if (includeLevel) {
-            const levelHeader = headerRow.insertCell();
-            levelHeader.textContent = 'Level';
-            levelHeader.style.border = '1px solid black';
-        }
-    
-        unitArray.forEach(unit => {
-            const cell = headerRow.insertCell();
-            cell.textContent = unit;
-            cell.style.border = '1px solid black';
-        });
-    
-        const levels = Object.keys(levelData);
-        const sortedLevels = levels.filter(level => level !== '01')
-            .sort((a, b) => parseInt(a) - parseInt(b));
-        if (levels.includes('01')) {
-            sortedLevels.push('01');
-        }
-    
-        sortedLevels.forEach(level => {
-            const row = table.insertRow();
-    
-            if (includeLevel) {
-                const levelCell = row.insertCell();
-                levelCell.textContent = level;
-                levelCell.style.border = '1px solid black';
-            }
-    
-            unitArray.forEach(unit => {
-                const cell = row.insertCell();
-                const unitData = levelData[level] && levelData[level][unit];
-    
-                if (unitData) {
-                    const value = unitData.code || '';  // Ensure you're using the 'code' value
-                    const backgroundColor = getColorForValue(value);
-                    cell.style.backgroundColor = backgroundColor;
-                    cell.style.border = '1px solid black';
-    
-                    // If the status is "HOME PASSED", display 'P' in the cell
-                    if (unitData.status === "PASSED") {
-                        cell.textContent = 'P';  // Insert 'P' if the status is "HOME PASSED"
-                    } else {
-                        cell.innerHTML = '&nbsp;';  // Otherwise, keep it empty
-                    }
-                } else {
-                    cell.style.backgroundColor = '#000000'; // Set background to black if no data
-                    cell.innerHTML = '&nbsp;'; // Keep it empty if no data
-                }
-            });
-        });
-    
-        const range = document.createRange();
-        range.selectNode(table);
-        const selection = window.getSelection();
-        selection.removeAllRanges();
-        selection.addRange(range);
-    
-        // Use the modern Clipboard API for better compatibility
-        try {
-            navigator.clipboard.writeText(table.outerHTML).then(() => {
-                showMessage(includeLevel ? "Table copied with levels" : "Table copied without levels");
-            }).catch(err => {
-                showMessage("Failed to copy table");
-                console.error('Clipboard write failed:', err);
-            });
-        } catch (err) {
-            showMessage("Failed to copy table");
-            console.error('Copy failed:', err);
-        }
-    
-        document.body.removeChild(container);
-        selection.removeAllRanges();
+function copyTable(includeLevel) {
+    if (!window.processedData) {
+        showMessage("Please process data first");
+        return;
     }
+
+    const { levelData, unitArray } = window.processedData;
+    
+    const container = document.createElement('div');
+    container.style.position = 'fixed';
+    container.style.top = '-9999px';
+    document.body.appendChild(container);
+
+    const table = document.createElement('table');
+    table.style.borderCollapse = 'collapse';
+    container.appendChild(table);
+
+    const headerRow = table.insertRow();
+    if (includeLevel) {
+        const levelHeader = headerRow.insertCell();
+        levelHeader.textContent = 'Level';
+        levelHeader.style.border = '1px solid black';
+    }
+
+    unitArray.forEach(unit => {
+        const cell = headerRow.insertCell();
+        cell.textContent = unit;
+        cell.style.border = '1px solid black';
+    });
+
+    const levels = Object.keys(levelData);
+    const sortedLevels = levels.filter(level => level !== '01')
+        .sort((a, b) => parseInt(a) - parseInt(b));
+    if (levels.includes('01')) {
+        sortedLevels.push('01');
+    }
+
+    sortedLevels.forEach(level => {
+        const row = table.insertRow();
+
+        if (includeLevel) {
+            const levelCell = row.insertCell();
+            levelCell.textContent = level;
+            levelCell.style.border = '1px solid black';
+        }
+
+        unitArray.forEach(unit => {
+            const cell = row.insertCell();
+            const unitData = levelData[level] && levelData[level][unit];
+
+            if (unitData) {
+                const value = unitData.code || '';  // Ensure 'code' is used here
+                const backgroundColor = getColorForValue(value);
+                cell.style.backgroundColor = backgroundColor;
+                cell.style.border = '1px solid black';
+
+                // If the status is "HOME PASSED", display 'P' in the cell
+                if (unitData.status === "PASSED") {
+                    cell.textContent = 'P';  // Insert 'P' if the status is "HOME PASSED"
+                } else {
+                    cell.innerHTML = '&nbsp;';  // Otherwise, keep it empty
+                }
+            } else {
+                cell.style.backgroundColor = '#000000'; // Set background to black if no data
+                cell.innerHTML = '&nbsp;'; // Keep it empty if no data
+            }
+        });
+    });
+
+    const range = document.createRange();
+    range.selectNode(table);
+    const selection = window.getSelection();
+    selection.removeAllRanges();
+    selection.addRange(range);
+
+    try {
+        document.execCommand('copy');
+        showMessage(includeLevel ? "Table copied with levels" : "Table copied without levels");
+    } catch (err) {
+        showMessage("Failed to copy table");
+        console.error('Copy failed:', err);
+    }
+
+    document.body.removeChild(container);
+    selection.removeAllRanges();
+}
+
 
 
         function showMessage(text) {
