@@ -168,7 +168,7 @@
                     let code = columns[0].trim();
                     const unit = columns[columns.length - 1].trim();
 
-                    const unitParts = unit.replace('#', '').split('-');
+                    const unitParts = unit.replace('#', '').split(/[-_]/);
                     if (unitParts.length === 2) {
                         const level = unitParts[0];
                         const unitNumber = unitParts[1];
