@@ -133,7 +133,7 @@
 </head>
 <body>
     <h1>Data Filter and Table Generator for AA Sales</h1>
-    <p>ver.10</p>
+    <p>ver.11</p>
     <p>Paste your data below</p>
     <textarea id="inputData" placeholder="Paste data here..."></textarea>
     <div class="controls">
@@ -172,12 +172,9 @@
                 
                 if (columns.length >= 5) {  // Ensure there are at least 4 columns
                     status = columns[0].trim();  // First column as status (e.g., HOME REACHED)
-                    postalCode = columns[1].trim();  // Second column as postal code (e.g., 760101)
-                    let code = columns[2].trim();  // Third column as code (e.g., C)
+                    postalCode = columns[2].trim();  // Second column as postal code (e.g., 760101)
+                    let code = columns[3].trim();  // Third column as code (e.g., C)
                     const unit = columns[columns.length - 1].trim();  // Last column as unit (e.g., #04-95)
-                    console.log(status);
-                    console.log(postalCode);
-                    console.log(code);
         
                     const unitParts = unit.replace('#', '').split('-');
                     if (unitParts.length === 2) {
