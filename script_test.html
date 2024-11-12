@@ -133,7 +133,7 @@
 </head>
 <body>
     <h1>Data Filter and Table Generator for AA Sales</h1>
-    <p>ver.14</p>
+    <p>ver.16</p>
     <p>Paste your data below</p>
     <textarea id="inputData" placeholder="Paste data here..."></textarea>
     <div class="controls">
@@ -185,11 +185,16 @@
                             levelData[level] = {};
                         }
         
-                        // Assign the code (e.g., C) to the levelData for that unit
-                        if (!code) {  // This checks for falsy values like "" (empty string), null, undefined
-                            levelData[level][unitNumber] = { code: ' ', status: status }; // Set code to a space
-                        } else if (code === 'A' || code === 'C') {
-                            levelData[level][unitNumber] = { code: code, status: status };
+                        code = code.trim();  // Ensure there is no accidental whitespace
+                        if (code === '') {
+                            levelData[level][unitNumber] = { code: ' ', status: status };  // Assign empty code and status
+                        } else {
+                            code = code.toUpperCase();
+                            if (code === 'A' || code === 'C') {
+                                levelData[level][unitNumber] = { code: code, status: status };  // Assign code and status
+                            } else {
+                                levelData[level][unitNumber] = { code: ' ', status: status };  // Assign empty code and status
+                            }
                         }
 
         
