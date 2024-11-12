@@ -252,7 +252,7 @@
         
                     // Apply background color based on the value (e.g., 'C' or 'A')
                     cell.style.backgroundColor = getColorForValue(unitData.code);
-        
+                    console.log(level, unit, code, status);
                     // If the status is "HOME PASSED", display 'p' in the cell
                     if (unitData.status === "HOME PASSED") {
                         cell.textContent = 'p';  // Insert 'p' if the status is "HOME PASSED"
