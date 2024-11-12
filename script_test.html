@@ -133,7 +133,7 @@
 </head>
 <body>
     <h1>Data Filter and Table Generator for AA Sales</h1>
-    <p>ver.final!!</p>
+    <p>ver.kms</p>
     <p>Paste your data below</p>
     <textarea id="inputData" placeholder="Paste data here..."></textarea>
     <div class="controls">
@@ -321,7 +321,7 @@ function copyTable(includeLevel) {
         return;
     }
 
-    const { levelData, unitArray } = window.processedData;
+    const { levelData, unitArray, postalCode } = window.processedData;
     
     const container = document.createElement('div');
     container.style.position = 'fixed';
