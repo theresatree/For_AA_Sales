@@ -35,7 +35,7 @@
 
         textarea {
             width: 90%;
-            max-width: 500px;
+            max-width: 600px;
             height: 150px;
             margin: 10px auto;
             display: block;
@@ -97,7 +97,23 @@
             font-size: clamp(0.8rem, 2.5vw, 1rem);
         }
 
+         /* can delete next time */
+        div p {
+            font-size: 16px;
+        }
+         /* can delete next time */
         @media (max-width: 600px) {
+            /* can delete next time */
+            div p {
+                font-size: 10px;
+            }
+            div p:first-child {
+                font-size: 12px; /* Keep the note heading slightly larger for emphasis */
+            }
+            .responsive-text {
+            font-size: 13px;
+            }
+             /* can delete next time */
             body {
                 padding: 10px;
             }
@@ -133,6 +149,14 @@
 </head>
 <body>
     <h1>Data Filter and Table Generator for AA Sales</h1>
+    <div style="border: 2px solid red; margin: 15px auto; padding: 15px; max-width: 600px;">
+        <p style="color: red; font-weight: bold; margin: 5px 0;">*Note*</p>
+        <p class="responsive-text">Have included two columns to account for "Home Passed"</p>
+        <p class="responsive-text" style="margin-top: 15px;">----This is the new input format----</p>
+        <p style="color: red; font-weight: bold;">HOME REACHED | 760103 | A | YISHUN RING ROAD | #XX-XX</p>
+    </div>
+
+
     <p>Paste your data below</p>
     <textarea id="inputData" placeholder="Paste data here..."></textarea>
     <div class="controls">
@@ -161,94 +185,142 @@
             const rows = inputData.split('\n');
             const levelData = {};
             const unitNumbers = new Set();
-
+            
+            // Variables to store status and postal code
+            let postalCode = null; 
+            let status = null;
+        
             rows.forEach(row => {
                 const columns = row.trim().split(/[\t\s]+/);
-                if (columns.length >= 3) {
-                    let code = columns[0].trim();
-                    const unit = columns[columns.length - 1].trim();
-
+                
+                if (columns.length >= 5) {  // Ensure there are at least 4 columns
+                    status = columns[1].trim();  // First column as status (e.g., HOME REACHED)
+                    postalCode = columns[2].trim();  // Second column as postal code (e.g., 760101)
+                    let code = columns[3].trim();  // Third column as code (e.g., C)
+                    const unit = columns[columns.length - 1].trim();  // Last column as unit (e.g., #04-95)
+        
                     const unitParts = unit.replace('#', '').split('-');
                     if (unitParts.length === 2) {
-                        const level = unitParts[0];
-                        const unitNumber = unitParts[1];
-
+                        const level = unitParts[0]; // Level (e.g., 04)
+                        const unitNumber = unitParts[1]; // Unit number (e.g., 95)
+        
                         if (!levelData[level]) {
                             levelData[level] = {};
                         }
-
+        
+                        code = code.trim();  // Ensure there is no accidental whitespace
                         if (code === '') {
-                            levelData[level][unitNumber] = ' ';
+                            levelData[level][unitNumber] = { code: ' ', status: status };  // Assign empty code and status
                         } else {
                             code = code.toUpperCase();
                             if (code === 'A' || code === 'C') {
-                                levelData[level][unitNumber] = code;
+                                levelData[level][unitNumber] = { code: code, status: status };  // Assign code and status
                             } else {
-                                levelData[level][unitNumber] = ' ';
+                                levelData[level][unitNumber] = { code: ' ', status: status };  // Assign empty code and status
                             }
                         }
 
+        
                         unitNumbers.add(unitNumber);
                     }
                 }
             });
-
+        
             const unitArray = Array.from(unitNumbers).sort((a, b) => parseInt(a) - parseInt(b));
-
+        
             window.processedData = {
                 levelData: levelData,
-                unitArray: unitArray
+                unitArray: unitArray,
+                postalCode: postalCode,  // Store postal code
+                status: status           // Store status
             };
-
+        
             displayTable(levelData, unitArray);
         }
-
-        function displayTable(levelData, unitArray) {
-            const table = document.getElementById('dataTable');
-            const thead = table.getElementsByTagName('thead')[0];
-            const tbody = table.getElementsByTagName('tbody')[0];
-            
-            thead.innerHTML = '';
-            tbody.innerHTML = '';
-
-            const headerRow = thead.insertRow();
-            const levelHeader = headerRow.insertCell();
-            levelHeader.textContent = 'Level';
-            levelHeader.style.fontWeight = 'bold';
-
-            unitArray.forEach(unit => {
-                const th = headerRow.insertCell();
-                th.textContent = unit;
-                th.style.fontWeight = 'bold';
-            });
-
-            const levels = Object.keys(levelData);
-            const sortedLevels = levels.filter(level => level !== '01')
-                .sort((a, b) => parseInt(a) - parseInt(b));
-            if (levels.includes('01')) {
-                sortedLevels.push('01');
-            }
-
-            sortedLevels.forEach(level => {
-                const row = tbody.insertRow();
-                const levelCell = row.insertCell();
-                levelCell.textContent = level;
-
-                unitArray.forEach(unit => {
-                    const cell = row.insertCell();
-                    const value = levelData[level][unit];
-                    cell.style.backgroundColor = getColorForValue(value);
-                    cell.innerHTML = '&nbsp;';
-                });
-            });
+        
+        
+    function displayTable(levelData, unitArray) {
+        const table = document.getElementById('dataTable');
+        const thead = table.getElementsByTagName('thead')[0];
+        const tbody = table.getElementsByTagName('tbody')[0];
+    
+        thead.innerHTML = '';
+        tbody.innerHTML = '';
+    
+        // Create table header
+        const headerRow = thead.insertRow();
+        const levelHeader = headerRow.insertCell();
+        levelHeader.textContent = 'Level';
+        levelHeader.style.fontWeight = 'bold';
+    
+        // Create unit number headers
+        unitArray.forEach(unit => {
+            const th = headerRow.insertCell();
+            th.textContent = unit;
+            th.style.fontWeight = 'bold';
+        });
+    
+        // Sort and display levels (excluding '01' at first, then pushing it to the end)
+        const levels = Object.keys(levelData);
+        const sortedLevels = levels.filter(level => level !== '01')
+            .sort((a, b) => parseInt(a) - parseInt(b));
+        if (levels.includes('01')) {
+            sortedLevels.push('01');
         }
+    
+        // Display rows for each level
+        sortedLevels.forEach(level => {
+            const row = tbody.insertRow();
+            const levelCell = row.insertCell();
+            levelCell.textContent = level;
+    
+            unitArray.forEach(unit => {
+                const cell = row.insertCell();
+                const unitData = levelData[level] && levelData[level][unit];  // Safely get unit data
+    
+                if (unitData) {
+                    // Apply background color based on the value (e.g., 'C' or 'A')
+                    cell.style.backgroundColor = getColorForValue(unitData.code);
+    
+                    // If the status is "HOME PASSED", display 'p' in the cell
+                    if (unitData.status === "PASSED") {
+                        cell.textContent = 'P';  // Insert 'p' if the status is "HOME PASSED"
+                    } else {
+                        cell.innerHTML = '&nbsp;';  // Otherwise, keep it empty or with existing data
+                    }
+                } else {
+                    
+                    // Default behavior if unitData is not found
+                    cell.style.backgroundColor = '#000000'; // Set background to black
+                    cell.innerHTML = '&nbsp;'; // Keep it empty if no data
+                }
+            });
+        });
+        // Add two additional rows below the data
+        const additionalRow1 = tbody.insertRow();
+        const additionalRow2 = tbody.insertRow();
+        
+        // Fill the first additional row with empty cells
+        additionalRow1.insertCell().innerHTML = '&nbsp;'; // Empty cell for level header
+        unitArray.forEach(() => additionalRow1.insertCell().innerHTML = '&nbsp;'); // Empty cells for unit numbers
 
+        const firstEmptyCell = additionalRow2.insertCell();
+        firstEmptyCell.innerHTML = '&nbsp;';
+        // Fill the second additional row with postal code in the first cell
+        const postalCodeRow = additionalRow2.insertCell();
+        postalCodeRow.setAttribute('colspan', unitArray.length);  // Make postal code cell span across all columns
+        postalCodeRow.style.textAlign = 'center';  // Center align the text
+        postalCodeRow.innerHTML = window.processedData.postalCode || '&nbsp;'; // Insert postal code
+
+        
+    }
+        
         function getColorForValue(value) {
             if (value === 'A') return '#00FF00';
             if (value === 'C') return '#FF0000';
-            if (value === undefined) return '#000000';
             return '#FFFFFF';
         }
+
 
         function clearData() {
             document.getElementById('inputData').value = '';
@@ -262,64 +334,99 @@
                 showMessage("Please process data first");
                 return;
             }
-
-            const { levelData, unitArray } = window.processedData;
-            
+        
+            const { levelData, unitArray, postalCode } = window.processedData;
+        
             const container = document.createElement('div');
             container.style.position = 'fixed';
             container.style.top = '-9999px';
             document.body.appendChild(container);
-
+        
             const table = document.createElement('table');
             table.style.borderCollapse = 'collapse';
             container.appendChild(table);
-
+        
             const headerRow = table.insertRow();
             if (includeLevel) {
                 const levelHeader = headerRow.insertCell();
                 levelHeader.textContent = 'Level';
                 levelHeader.style.border = '1px solid black';
             }
-
+        
             unitArray.forEach(unit => {
                 const cell = headerRow.insertCell();
                 cell.textContent = unit;
                 cell.style.border = '1px solid black';
             });
-
+        
             const levels = Object.keys(levelData);
             const sortedLevels = levels.filter(level => level !== '01')
                 .sort((a, b) => parseInt(a) - parseInt(b));
             if (levels.includes('01')) {
                 sortedLevels.push('01');
             }
-
+        
             sortedLevels.forEach(level => {
                 const row = table.insertRow();
-                
+        
                 if (includeLevel) {
                     const levelCell = row.insertCell();
                     levelCell.textContent = level;
                     levelCell.style.border = '1px solid black';
                 }
-
+        
                 unitArray.forEach(unit => {
                     const cell = row.insertCell();
-                    const value = levelData[level][unit];
-                    cell.style.backgroundColor = getColorForValue(value);
-                    cell.style.border = '1px solid black';
-                    cell.innerHTML = '&nbsp;';
-                    cell.style.width = '30px';
-                    cell.style.height = '20px';
+                    const unitData = levelData[level] && levelData[level][unit];
+        
+                    if (unitData) {
+                        const value = unitData.code || '';  // Ensure 'code' is used here
+                        const backgroundColor = getColorForValue(value);
+                        cell.style.backgroundColor = backgroundColor;
+                        cell.style.border = '1px solid black';
+        
+                        // If the status is "HOME PASSED", display 'P' in the cell
+                        if (unitData.status === "PASSED") {
+                            cell.textContent = 'P';  // Insert 'P' if the status is "HOME PASSED"
+                        } else {
+                            cell.innerHTML = '&nbsp;';  // Otherwise, keep it empty
+                        }
+                    } else {
+                        cell.style.backgroundColor = '#000000'; // Set background to black if no data
+                        cell.innerHTML = '&nbsp;'; // Keep it empty if no data
+                        cell.style.border = '1px solid black'; // Ensure border is applied
+                    }
                 });
             });
-
+        
+            // Add two additional rows before the postal code row
+            const tbody = table.createTBody(); // Create tbody for the additional rows
+            const additionalRow1 = tbody.insertRow();
+            const additionalRow2 = tbody.insertRow();
+            
+            // Fill the first additional row with empty cells
+            additionalRow1.insertCell().innerHTML = '&nbsp;'; // Empty cell for level header
+            unitArray.forEach(() => additionalRow1.insertCell().innerHTML = '&nbsp;'); // Empty cells for unit numbers
+        
+            // Fill the second additional row with postal code in the last cell
+            const firstEmptyCell = additionalRow2.insertCell();
+            firstEmptyCell.innerHTML = '&nbsp;';
+            
+            const postalCodeRow = additionalRow2.insertCell();
+            postalCodeRow.setAttribute('colspan', unitArray.length);  // Make postal code cell span across all columns
+            postalCodeRow.style.textAlign = 'center';  // Center align the text
+            postalCodeRow.innerHTML = postalCode || '&nbsp;'; // Insert postal code
+        
+            postalCodeRow.style.fontWeight = 'bold'; // Prevent bolding of postal code
+            postalCodeRow.style.border = 'none'; // Remove the border from postal code cell
+            postalCodeRow.style.fontSize = '30px'; // Set the font size to 50px
+        
             const range = document.createRange();
             range.selectNode(table);
             const selection = window.getSelection();
             selection.removeAllRanges();
             selection.addRange(range);
-            
+        
             try {
                 document.execCommand('copy');
                 showMessage(includeLevel ? "Table copied with levels" : "Table copied without levels");
@@ -327,10 +434,12 @@
                 showMessage("Failed to copy table");
                 console.error('Copy failed:', err);
             }
-
+        
             document.body.removeChild(container);
             selection.removeAllRanges();
         }
+
+
 
         function showMessage(text) {
             const message = document.createElement('div');
