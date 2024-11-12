@@ -292,10 +292,13 @@
         
         // Fill the second additional row with postal code in the first cell
         const postalCodeRow = additionalRow2.insertCell();
+        postalCodeRow.setAttribute('colspan', unitArray.length + 1);  // Make postal code cell span across all columns
+        postalCodeRow.style.textAlign = 'center';  // Center align the text
         postalCodeRow.innerHTML = window.processedData.postalCode || '&nbsp;'; // Insert postal code
-    
+        
         // Fill in the rest of the cells with empty data
         unitArray.forEach(() => additionalRow2.insertCell().innerHTML = '&nbsp;'); // Empty cells
+
         
     }
         
