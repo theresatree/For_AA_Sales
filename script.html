@@ -199,7 +199,7 @@
                     let code = columns[3].trim();  // Third column as code (e.g., C)
                     const unit = columns[columns.length - 1].trim();  // Last column as unit (e.g., #04-95)
         
-                    const unitParts = unit.replace('#', '').split('-');
+                    const unitParts = unit.replace('#', '').split(/[-_]/);
                     if (unitParts.length === 2) {
                         const level = unitParts[0]; // Level (e.g., 04)
                         const unitNumber = unitParts[1]; // Unit number (e.g., 95)
