@@ -133,6 +133,7 @@
 </head>
 <body>
     <h1>Data Filter and Table Generator for AA Sales</h1>
+    <p>ver.2</p>
     <p>Paste your data below</p>
     <textarea id="inputData" placeholder="Paste data here..."></textarea>
     <div class="controls">
@@ -161,22 +162,30 @@
             const rows = inputData.split('\n');
             const levelData = {};
             const unitNumbers = new Set();
-
+        
+            // Variables to store status and postal code
+            let postalCode = null; 
+            let status = null;
+        
             rows.forEach(row => {
                 const columns = row.trim().split(/[\t\s]+/);
-                if (columns.length >= 3) {
-                    let code = columns[0].trim();
-                    const unit = columns[columns.length - 1].trim();
-
+                
+                if (columns.length >= 4) {  // Ensure there are at least 4 columns
+                    status = columns[0].trim();  // First column as status (e.g., HOME REACHED)
+                    postalCode = columns[1].trim();  // Second column as postal code (e.g., 760101)
+                    let code = columns[2].trim();  // Third column as code (e.g., C)
+                    const unit = columns[columns.length - 1].trim();  // Last column as unit (e.g., #04-95)
+        
                     const unitParts = unit.replace('#', '').split('-');
                     if (unitParts.length === 2) {
-                        const level = unitParts[0];
-                        const unitNumber = unitParts[1];
-
+                        const level = unitParts[0]; // Level (e.g., 04)
+                        const unitNumber = unitParts[1]; // Unit number (e.g., 95)
+        
                         if (!levelData[level]) {
                             levelData[level] = {};
                         }
-
+        
+                        // Assign the code (e.g., C) to the levelData for that unit
                         if (code === '') {
                             levelData[level][unitNumber] = ' ';
                         } else {
@@ -187,21 +196,24 @@
                                 levelData[level][unitNumber] = ' ';
                             }
                         }
-
+        
                         unitNumbers.add(unitNumber);
                     }
                 }
             });
-
+        
             const unitArray = Array.from(unitNumbers).sort((a, b) => parseInt(a) - parseInt(b));
-
+        
             window.processedData = {
                 levelData: levelData,
-                unitArray: unitArray
+                unitArray: unitArray,
+                postalCode: postalCode,  // Store postal code
+                status: status           // Store status
             };
-
+        
             displayTable(levelData, unitArray);
         }
+
 
         function displayTable(levelData, unitArray) {
             const table = document.getElementById('dataTable');
