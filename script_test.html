@@ -210,46 +210,60 @@
             const table = document.getElementById('dataTable');
             const thead = table.getElementsByTagName('thead')[0];
             const tbody = table.getElementsByTagName('tbody')[0];
-            
+        
             thead.innerHTML = '';
             tbody.innerHTML = '';
-
+        
             const headerRow = thead.insertRow();
             const levelHeader = headerRow.insertCell();
             levelHeader.textContent = 'Level';
             levelHeader.style.fontWeight = 'bold';
-
-            unitArray.forEach(unit => {
-                const th = headerRow.insertCell();
-                th.textContent = unit;
-                th.style.fontWeight = 'bold';
-            });
-
+        
+            const statusHeader = headerRow.insertCell();
+            statusHeader.textContent = 'Status';
+            statusHeader.style.fontWeight = 'bold';
+        
+            const codeHeader = headerRow.insertCell();
+            codeHeader.textContent = 'Code';
+            codeHeader.style.fontWeight = 'bold';
+        
+            const unitHeader = headerRow.insertCell();
+            unitHeader.textContent = 'Unit';
+            unitHeader.style.fontWeight = 'bold';
+        
             const levels = Object.keys(levelData);
             const sortedLevels = levels.filter(level => level !== '01')
                 .sort((a, b) => parseInt(a) - parseInt(b));
             if (levels.includes('01')) {
                 sortedLevels.push('01');
             }
-
+        
             sortedLevels.forEach(level => {
                 const row = tbody.insertRow();
+        
                 const levelCell = row.insertCell();
                 levelCell.textContent = level;
-
+        
+                const statusCell = row.insertCell();
+                statusCell.textContent = status;
+        
                 unitArray.forEach(unit => {
-                    const cell = row.insertCell();
+                    const codeCell = row.insertCell();
                     const value = levelData[level][unit];
-                    cell.style.backgroundColor = getColorForValue(value);
-                    cell.innerHTML = data.status === 'HOME PASSED' ? 'P' : (data.code === ' ' ? '&nbsp;' : data.code);
+                    codeCell.style.backgroundColor = getColorForValue(value);
+                    codeCell.innerHTML = status === 'HOME PASSED' ? 'P' : (value === ' ' ? '&nbsp;' : value);
+        
+                    const unitCell = row.insertCell();
+                    unitCell.textContent = unit;
                 });
             });
-
+        
             const postalRow = tbody.insertRow();
             postalRow.insertCell().innerHTML = '&nbsp;';
             postalRow.insertCell().innerHTML = '&nbsp;';
+            postalRow.insertCell().innerHTML = '&nbsp;';
             const postalCell = postalRow.insertCell();
-            postalCell.colSpan = unitArray.length - 2;
+            postalCell.colSpan = unitArray.length - 1;
             postalCell.textContent = `Postal Code: ${postalCode}`;
         }
 
