@@ -133,7 +133,7 @@
 </head>
 <body>
     <h1>Data Filter and Table Generator for AA Sales</h1>
-    <p>ver.final??</p>
+    <p>ver.final!!</p>
     <p>Paste your data below</p>
     <textarea id="inputData" placeholder="Paste data here..."></textarea>
     <div class="controls">
@@ -383,6 +383,14 @@ function copyTable(includeLevel) {
             }
         });
     });
+        // Add postal code row to the copied table
+    const postalCodeRow = table.insertRow();
+    const firstEmptyCell = postalCodeRow.insertCell();
+    firstEmptyCell.innerHTML = '&nbsp;'; // Empty cell for level header
+    const postalCodeCell = postalCodeRow.insertCell();
+    postalCodeCell.setAttribute('colspan', unitArray.length);  // Make postal code cell span across all columns
+    postalCodeCell.style.textAlign = 'center';  // Center align the text
+    postalCodeCell.innerHTML = postalCode || '&nbsp;'; // Insert postal code
 
     const range = document.createRange();
     range.selectNode(table);
